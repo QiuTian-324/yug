@@ -104,7 +104,7 @@ func AddFriend(ctx *gin.Context) {
 
 	if err := services.AddFriend(db, userID, req); err != nil {
 		pkg.Error("添加好友失败", err)
-		libs.FailResponse(ctx, "添加好友失败", nil)
+		libs.FailResponse(ctx, err.Error(), nil)
 		return
 	}
 

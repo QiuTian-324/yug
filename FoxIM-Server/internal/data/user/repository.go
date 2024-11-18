@@ -82,3 +82,13 @@ func FindUserByUserName(db *gorm.DB, username string) (*User, error) {
 	}
 	return &user, nil
 }
+
+// 校验是否是否为好友
+func IsFriend(db *gorm.DB, userID, friendID uint) (bool, error) {
+	var friend Friend
+	err := db.Where("user_id = ? AND friend_id = ?", userID, friendID).First(&friend).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return false, nil
+	}
+	return true, err
+}
