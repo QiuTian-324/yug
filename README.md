@@ -125,4 +125,4 @@ Fork 本仓库
 ## 联系我
 
 - Email: yjj4872@gmail.com
-- Issue Tracker: GitHub Issues
+- **Issue Tracker**: [GitHub Issues](https://github.com/QiuTian-324/FoxIM.git/issues)
