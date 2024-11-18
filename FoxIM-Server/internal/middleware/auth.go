@@ -5,23 +5,20 @@ import (
 	"gin_template/global"
 	"gin_template/internal/libs"
 	"gin_template/pkg"
+	"strings"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 // AuthToken token校验
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 优先从请求头获取 token
-		token := c.GetHeader("Authorization")
+		token := c.Request.Header.Get("Authorization")
 
-		pkg.Debug("token", zap.String("token", token))
+		parts := strings.SplitN(token, " ", 2)
 
-		// 如果请求头中没有 token，则从查询参数中获取
-		if token == "" {
-			token = c.Query("token")
-		}
+		token = parts[1]
 
 		ip := c.ClientIP()
 		// 检查 token 是否存在

@@ -25,3 +25,15 @@ type AddFriendRequest struct {
 type AddFriendResponse struct {
 	FriendID uint `json:"friend_id"`
 }
+
+// 好友列表响应
+type FriendListResponse struct {
+	UserID    uint   `json:"user_id"`
+	Username  string `json:"username"`
+	Nickname  string `json:"nickname"`
+	Email     string `json:"email"`
+	Phone     string `json:"phone"`
+	AvatarUrl string `json:"avatar_url"`
+	Bio       string `json:"bio"`
+	Online    int    `json:"online"`
+}

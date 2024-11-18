@@ -1,4 +1,3 @@
-import { newErrorMessage, newSuccessMessage } from '@renderer/pkg/messages';
 import axios from 'axios';
 /** 创建axios实例 */
 const request = axios.create({
@@ -12,7 +11,7 @@ request.interceptors.request.use(
     // 发请求带上token
     const token = localStorage.getItem("token");
     if (token) {
-      config.headers.Authorization = token;
+      config.headers.Authorization = "Bearer " + token;
     }
     return config;
   },
@@ -24,24 +23,31 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
   (resp: any) => {
-    newSuccessMessage(resp.data.message)
     return resp.data
   },
-  (error) => {
-    newErrorMessage(error.response.data.message)
+  (error: any) => {
     return Promise.reject(error.response.data)
   }
 )
 
 export default request
 
+// 定义 API 响应的接口
+export interface ApiResponse<T> {
+  code: number;
+  data: T;
+  message: string;
+  success: boolean;
+}
+
+
 // GET 请求
-export function Get(url, params = {}) {
+export function Get<T>(url: string, params: Record<string, any> = {}): Promise<ApiResponse<T>> {
   return request.get(url, { params });
 }
 
 // POST 请求
-export function Post(url, data = {}) {
-  console.log(url)
+export function Post<T>(url: string, data: Record<string, any> = {}): Promise<ApiResponse<T>> {
+  console.log(url);
   return request.post(url, data);
 }

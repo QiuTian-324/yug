@@ -50,6 +50,11 @@ func GetByUsername(db *gorm.DB, username string) (*User, error) {
 	return &user, err
 }
 
+// SetOnline 设置用户在线状态
+func (u *User) SetOnline(db *gorm.DB) error {
+	return db.Model(u).Where("id = ?", u.ID).Update("online", u.Online).Error
+}
+
 // 获取用户及其好友
 func GetUserWithFriends(db *gorm.DB, userID int64) (*User, error) {
 	var user User
@@ -76,7 +81,10 @@ func AddFriend(db *gorm.DB, userID, friendID uint) error {
 
 func FindUserByUserName(db *gorm.DB, username string) (*User, error) {
 	var user User
-	err := db.Where("username = ?", username).First(&user).Error
+	err := db.
+		Where("username = ?", username).
+		First(&user).
+		Error
 	if err != nil {
 		return nil, err
 	}
@@ -86,9 +94,51 @@ func FindUserByUserName(db *gorm.DB, username string) (*User, error) {
 // 校验是否是否为好友
 func IsFriend(db *gorm.DB, userID, friendID uint) (bool, error) {
 	var friend Friend
-	err := db.Where("user_id = ? AND friend_id = ?", userID, friendID).First(&friend).Error
+	err := db.
+		Where("(user_id = ? AND friend_id = ?) OR (friend_id AND user_id)", userID, friendID, userID, friendID).
+		First(&friend).
+		Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return false, nil
 	}
 	return true, err
+}
+
+// 获取好友列表
+func GetFriends(db *gorm.DB, userID uint) ([]User, error) {
+	var friends []Friend
+	if err := db.
+		Preload("Friend").
+		Where("user_id = ?", userID).
+		Find(&friends).
+		Error; err != nil {
+		return nil, err
+	}
+
+	var reverseFriends []Friend
+	if err := db.
+		Preload("User").
+		Where("friend_id = ?", userID).
+		Find(&reverseFriends).
+		Error; err != nil {
+		return nil, err
+	}
+
+	// 合并两个结果
+	allFriendsMap := make(map[uint]User)
+	for _, friend := range friends {
+		allFriendsMap[friend.FriendID] = friend.Friend
+	}
+
+	for _, friend := range reverseFriends {
+		allFriendsMap[friend.UserID] = friend.User
+	}
+
+	// 将 map 转换为切片
+	var friendUsers []User
+	for _, user := range allFriendsMap {
+		friendUsers = append(friendUsers, user)
+	}
+
+	return friendUsers, nil
 }

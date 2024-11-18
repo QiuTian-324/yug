@@ -66,7 +66,7 @@
 
 <script setup lang="ts">
 import { UserStore } from '@renderer/stores/user'
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import AddFriend from './AddFriend.vue'
 const store = UserStore()
 
@@ -130,18 +130,12 @@ const filteredConversations = computed(() =>
     conversation.nickname.toLowerCase().includes(searchText.value.toLowerCase())
   )
 )
-
-const handleOk = () => {
-  visible.value = false
-}
-const handleCancel = () => {
-  visible.value = false
-}
-
 // 选择会话
 const selectConversation = (sessionId: number) => {
   selectedSessionId.value = sessionId
 }
+
+
 </script>
 
 <style scoped>

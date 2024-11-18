@@ -110,3 +110,19 @@ func AddFriend(ctx *gin.Context) {
 
 	libs.SuccessResponse(ctx, "添加好友成功", nil)
 }
+
+func GetUserSeesionList(ctx *gin.Context) {
+
+}
+
+func GetFriends(ctx *gin.Context) {
+	db := ctx.MustGet("db").(*gorm.DB)
+	userID := ctx.MustGet("id").(uint)
+
+	res, err := services.GetFriends(db, userID)
+	if err != err {
+		pkg.Error("获取好友列表失败", err)
+		libs.InternalServerErrorResponse(ctx, "获取好友列表失败")
+	}
+	libs.SuccessResponse(ctx, "获取好友列表成功", res)
+}
