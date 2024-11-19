@@ -4,13 +4,28 @@ import { newErrorMessage, newSuccessMessage } from '@renderer/pkg/messages';
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 export const UserStore = defineStore('user', () => {
+  // 用户信息
   const userInfo = ref({})
+  // token
   const token = ref(localStorage.getItem('token'))
+  // 添加好友对话框是否显示
   const addFriendModalVisible = ref(false)
+  // 添加好友数据
   const addFriendData = ref<AddFriendRequest>({
     username: ''
   })
 
+  // 选中目标ID
+  const selectedSeesionId = ref(0)
+
+  // 选择当前侧边栏
+  const selectedSidebar = ref(0)
+
+  // 好友列表
+  const friendList = ref<FriendListResponse[]>([])
+
+
+  // 初始化数据
   const init = () => {
     getUserInfo()
   }
@@ -27,6 +42,7 @@ export const UserStore = defineStore('user', () => {
       newSuccessMessage(res.message)
     } catch (error: any) {
       newErrorMessage(error.message)
+      return error
     }
   }
   // 添加好友
@@ -37,14 +53,15 @@ export const UserStore = defineStore('user', () => {
       newSuccessMessage(res.message)
     } catch (error: any) {
       newErrorMessage(error.message)
+      return error
     }
   }
 
   // 获取好友列表
   const getUserInfo = async () => {
     try {
-      const res: ApiResponse<FriendListResponse> = await Get<FriendListResponse>('/user/friends')
-      console.log(res)
+      const res: ApiResponse<FriendListResponse[]> = await Get<FriendListResponse[]>('/user/friends')
+      friendList.value = res.data
     } catch (error: any) {
       return error
     }
@@ -55,22 +72,29 @@ export const UserStore = defineStore('user', () => {
     token,
     addFriendModalVisible,
     addFriendData,
+    selectedSidebar,
+    friendList,
+    selectedSeesionId,
     LoginIn,
     addFriend,
     getUserInfo
   }
 }
-  // , {
-  //   persist: {
-  //     enabled: true,
-  //     strategies: [
-  //       {
-  //         key: 'token',
-  //         storage: localStorage,
-  //         paths: ['token'],
-
-  //       }
-  //     ]
-  //   }
-  // }
+  , {
+    persist: {
+      enabled: true,
+      strategies: [
+        {
+          key: 'selectedSidebar',
+          storage: localStorage,
+          paths: ['selectedSidebar'],
+        },
+        {
+          key: 'friendList',
+          storage: localStorage,
+          paths: ['friendList'],
+        }
+      ]
+    }
+  }
 )

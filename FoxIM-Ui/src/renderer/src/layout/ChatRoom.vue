@@ -7,20 +7,37 @@
     <div class="flex-grow flex pr-4 py-4">
       <div class="min-w-[200px] rounded-l-xl overflow-hidden w-[200px] h-full">
         <ChatList />
+        <!-- <ChatContactPerson v-if="store.selectedSidebar == 1" /> -->
       </div>
-      <div class="flex-grow h-full rounded-r-xl overflow-hidden bg-white">
-        <ChatHeader />
-        <ChatMessageArea />
-        <ChatMessageInput class="flex-1" />
+      <div class="flex-grow h-full rounded-r-xl text-black overflow-hidden bg-white">
+        <div v-if="store.selectedSidebar == 0" class="flex flex-col h-full">
+          <ChatHeader />
+          <ChatMessageArea />
+          <ChatMessageInput class="flex-1" />
+        </div>
+        <div
+          v-if="store.selectedSidebar == 1 && store.selectedSeesionId == 0"
+          class="flex flex-col h-full"
+        >
+          <Nodata />
+        </div>
+        <div v-if="store.selectedSidebar == 1 && store.selectedSeesionId != 0">
+          <ChatUserInfo />
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import Nodata from '@renderer/components/public/nodata.vue'
 import ChatHeader from '../components/chat/ChatHeader.vue'
 import ChatList from '../components/chat/ChatList.vue'
 import ChatMessageArea from '../components/chat/ChatMessageArea.vue'
 import ChatMessageInput from '../components/chat/ChatMessageInput.vue'
 import ChatSidebar from '../components/chat/ChatSidebar.vue'
+
+import ChatUserInfo from '@renderer/components/chat/ChatUserInfo.vue'
+import { UserStore } from '../stores/user'
+const store = UserStore()
 </script>
