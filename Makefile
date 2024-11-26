@@ -1,6 +1,6 @@
 # 定义变量
-SERVER_DIR := FoxIM-Server
-UI_DIR     := FoxIM-Ui
+SERVER_DIR := yg_server
+UI_DIR     := yg_desktop_ui
 
 # 执行 make go 时的行为
 go:

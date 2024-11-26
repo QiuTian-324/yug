@@ -1,0 +1,91 @@
+{
+  "common": {
+    "welcome": "Welcome Back!",
+    "login": "Login",
+    "logout": "Logout",
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "search": "Search",
+    "block": "Block",
+    "unblock": "Unblock",
+    "messages": "Messages",
+    "contacts": "Contacts",
+    "ai_assistant": "AI Assistant",
+    "profile": "Profile",
+    "settings": "Settings",
+    "thisFeature": "This feature is not available yet"
+  },
+  "chat": {
+    "title": "Chat",
+    "send": "Send",
+    "input_message": "Input message...",
+    "typing": "{name} is typing...",
+    "message": {
+      "empty": "No messages yet.",
+      "delete": "Delete message",
+      "edit": "Edit message"
+    }
+  },
+  "user": {
+    "profile": "Profile",
+    "username": "Username",
+    "email": "Email",
+    "password": "Password",
+    "change_password": "Change Password",
+    "add_friend": "Add Friend",
+    "add_friend_tooltip": "Enter friend's username",
+    "search_conversation": "Search conversations..."
+  },
+  "errors": {
+    "network": "Network error, please try again later.",
+    "authentication": "Authentication failed, please check your credentials.",
+    "server": "Server error, please try again later."
+  },
+  "login": {
+    "title": "Login",
+    "otherLoginMethods": "Other login methods",
+    "loginPrompt": "Enter your details to get sign into your account",
+    "registerPrompt": "Don't have an account?",
+    "register": "Register",
+    "loginFirst": "Please login first",
+    "account": "Account",
+    "password": "Password",
+    "email": "Email",
+    "captcha": "Captcha",
+    "sendCaptcha": "Send",
+    "sendingCaptcha": "Sending",
+    "loginButton": "Login"
+  },
+  "register": {
+    "title": "Register",
+    "username": "Username",
+    "password": "Password",
+    "registerButton": "Register",
+    "registerPrompt": "Enter your details to get sign up your account",
+    "account": "Account",
+    "email": "Email",
+    "sendCaptcha": "Send",
+    "sendingCaptcha": "Sending...",
+    "hasAccount": "Already have an account?",
+    "login": "Login"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "theme": "Theme"
+  },
+  "success": {
+    "login": "Login successful",
+    "logout": "Logout successful",
+    "register": "Registration successful",
+    "add_friend": "Add friend successful"
+  },
+  "fail": {
+    "login": "Login failed",
+    "logout": "Logout failed",
+    "register": "Registration failed",
+    "add_friend": "Add friend failed"
+  }
+}
