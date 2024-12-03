@@ -3,11 +3,11 @@ package config
 import (
 	"context"
 	"fmt"
-	"gin_template/pkg"
 	"net/http"
 	"os/signal"
 	"syscall"
 	"time"
+	"yug_server/pkg"
 
 	"github.com/spf13/viper"
 )

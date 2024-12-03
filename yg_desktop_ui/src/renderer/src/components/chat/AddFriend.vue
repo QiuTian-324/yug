@@ -2,7 +2,7 @@
   <div class="w-full max-w-md mx-auto">
     <a-form :model="store.addFriendData">
       <a-form-item
-        field="friendName"
+        field="username"
         :tooltip="$t('user.add_friend_tooltip')"
         :label="$t('user.username')"
       >
@@ -15,8 +15,5 @@
 <script setup lang="ts">
 import { UserStore } from '../../stores/user'
 const store = UserStore()
-// const form = reactive({
-//   friendName: ''
 
-// })
 </script>

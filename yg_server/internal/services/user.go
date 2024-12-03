@@ -1,106 +1,115 @@
 package services
 
 import (
-	"errors"
-	"gin_template/internal/data/user"
-	"gin_template/internal/dto"
-	"gin_template/pkg"
+	"context"
 
-	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
+	"yug_server/internal/data/user/model"
+	"yug_server/internal/dto"
+	"yug_server/internal/repo"
+
+	"go.uber.org/zap"
 )
 
-func RegisterUser(db *gorm.DB, dto *dto.RegisterRequest) error {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(dto.Password), bcrypt.DefaultCost)
-	if err != nil {
-		pkg.Error("生成密码哈希失败", err)
-		return errors.New("注册失败")
-	}
-	user := &user.User{
-		Username: dto.Username,
-		Password: string(hashedPassword),
-		Email:    dto.Email,
-		Phone:    dto.Phone,
-	}
+type UserUseCase struct {
+	repo   repo.UserRepo
+	logger *zap.Logger
+}
 
-	err = user.Add(db)
+func NewUserUseCase(repo repo.UserRepo, logger *zap.Logger) *UserUseCase {
+	return &UserUseCase{repo: repo, logger: logger}
+}
+
+func (uc *UserUseCase) Register(ctx context.Context, dto *dto.RegisterRequest) error {
+	err := uc.repo.Register(ctx, dto)
 	if err != nil {
-		pkg.Error("添加用户失败", err)
-		return errors.New("注册失败")
+		uc.logger.Error("注册失败", zap.Error(err))
+		return err
 	}
 	return nil
 }
 
-func Login(db *gorm.DB, username, password string) (*user.User, error) {
+func (uc *UserUseCase) Login(ctx context.Context, username, password string) (*model.User, error) {
 
 	// 查询用户
-	userInfo, err := user.GetByUsername(db, username)
+	userInfo, err := uc.repo.Login(ctx, username, password)
 	if err != nil {
-		pkg.Error("用户不存在", err)
-		return nil, errors.New("当前账号未注册")
-	}
-
-	// 更改当前用户的在线状态
-	user := new(user.User)
-	user.ID = userInfo.ID
-	user.Online = 1
-	err = user.SetOnline(db)
-	if err != nil {
-		pkg.Error("设置在线状态失败", err)
-		return nil, errors.New("登陆失败")
+		uc.logger.Error("用户不存在", zap.Error(err))
+		return nil, err
 	}
 
 	return userInfo, nil
 }
 
-func AddFriend(db *gorm.DB, userID uint, dto *dto.AddFriendRequest) error {
+// // 第三方登录
 
-	// 根据用户名查找好友
-	friendInfo, err := user.FindUserByUserName(db, dto.UserName)
-	if err != nil {
-		pkg.Error("该用户不存在", err)
-		return errors.New("该用户不存在")
-	}
+// func LoginByThirdParty(db *gorm.DB, username string) (*user.User, error) {
+// 	// 查询用户
+// 	userInfo, err := user.GetByUsername(db, username)
+// 	if err != nil {
+// 		pkg.Error("用户不存在", err)
+// 		return nil, errors.New("当前账号未注册")
+// 	}
 
-	isFriend, _ := user.IsFriend(db, userID, friendInfo.ID)
+// 	// 更改当前用户的在线状态
+// 	user := new(user.User)
+// 	user.ID = userInfo.ID
+// 	user.Online = 1
+// 	err = user.SetOnline(db)
+// 	if err != nil {
+// 		pkg.Error("设置在线状态失败", err)
+// 		return nil, errors.New("登陆失败")
+// 	}
 
-	if isFriend {
-		pkg.Info("已经是好友了")
-		return errors.New("你们已经是好友了")
-	}
+// 	return userInfo, nil
+// }
 
-	if friendInfo.ID == userID {
-		pkg.Error("不能添加自己为好友", nil)
-		return errors.New("不能添加自己为好友")
-	}
+// func (uc *UserUseCase) AddFriend(ctx context.Context, userID uint64, friendID uint64) error {
 
-	err = user.AddFriend(db, userID, friendInfo.ID)
-	if err != nil {
-		pkg.Error("添加好友失败", err)
-		return errors.New("添加好友失败")
-	}
-	return nil
-}
+// 	// 根据用户名查找好友
+// 	err := uc.repo.AddFriend(ctx, userID, friendID)
+// 	if err != nil {
+// 		uc.logger.Error("添加好友失败", zap.Error(err))
+// 		return err
+// 	}
+// 	// isFriend, _ := uc.repo.IsFriend(ctx, userID, friendInfo.ID)
 
-func GetFriends(db *gorm.DB, userID uint) ([]dto.FriendListResponse, error) {
-	friends, err := user.GetFriends(db, userID)
-	if err != nil {
-		return nil, err
-	}
-	var friendList []dto.FriendListResponse
+// 	// if isFriend {
+// 	// 	pkg.Info("已经是好友了")
+// 	// 	return errors.New("你们已经是好友了")
+// 	// }
 
-	for _, friend := range friends {
-		friendList = append(friendList, dto.FriendListResponse{
-			UserID:    friend.ID,
-			Username:  friend.Username,
-			Nickname:  friend.Nickname,
-			Email:     friend.Email,
-			Phone:     friend.Phone,
-			AvatarUrl: friend.AvatarUrl,
-			Bio:       friend.Bio,
-			Online:    friend.Online,
-		})
-	}
+// 	// if friendInfo.ID == userID {
+// 	// 	pkg.Error("不能添加自己为好友", nil)
+// 	// 	return errors.New("不能添加自己为好友")
+// 	// }
 
-	return friendList, nil
-}
+// 	// err = user.AddFriend(db, userID, friendInfo.ID)
+// 	// if err != nil {
+// 	// 	pkg.Error("添加好友失败", err)
+// 	// 	return errors.New("添加好友失败")
+// 	// }
+// 	return nil
+// }
+
+// func (uc *UserUseCase) GetFriends(ctx context.Context, userID uint64) ([]dto.FriendListResponse, error) {
+// 	friends, err := uc.repo.GetFriends(ctx, userID)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	var friendList []dto.FriendListResponse
+
+// 	for _, friend := range friends {
+// 		friendList = append(friendList, dto.FriendListResponse{
+// 			UserID:    friend.ID,
+// 			Username:  friend.Username,
+// 			Nickname:  friend.Nickname,
+// 			Email:     friend.Email,
+// 			Phone:     friend.Phone,
+// 			AvatarUrl: friend.AvatarUrl,
+// 			Bio:       friend.Bio,
+// 			Online:    friend.Online,
+// 		})
+// 	}
+
+// 	return friendList, nil
+// }

@@ -5,13 +5,13 @@
       <li
         v-for="conversation in conversations"
         :key="conversation.sessionId"
-        @click="selectConversation(conversation.sessionId)"
         :class="[
           'flex items-center gap-3 p-2 mx-2 my-2 rounded-lg cursor-pointer',
           selectedSessionId === conversation.sessionId
             ? 'text-white bg-blue-500'
-            : 'hover:text-black hover:bg-blue-100'
+            : 'hover:text-black hover:bg-gray-100'
         ]"
+        @click="selectConversation(conversation.sessionId)"
       >
         <!-- 头像 -->
         <div class="w-[40px] h-[40px]">

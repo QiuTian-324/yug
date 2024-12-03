@@ -1,9 +1,9 @@
 import { newWarningMessage } from '@renderer/pkg/messages';
 import { UserStore } from '@renderer/stores/user';
-import { createRouter, createWebHashHistory } from 'vue-router';
-import ChatRoom from '../layout/ChatRoom.vue';
-import Login from '../layout/Login.vue';
-import Register from '../layout/Register.vue';
+import { createRouter, createWebHistory } from 'vue-router';
+import ChatRoom from '../views/ChatRoom.vue';
+import Login from '../views/Login.vue';
+import Register from '../views/Register.vue';
 
 
 
@@ -23,10 +23,15 @@ const routes = [
     name: 'register',
     component: Register,
   },
+  // {
+  //   path: '/callback',
+  //   name: 'callback',
+  //   component: Callback,
+  // },
 ];
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory(),
   routes,
 });
 

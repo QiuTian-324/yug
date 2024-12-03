@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"gin_template/global"
-	"gin_template/internal/config"
 	"os"
+	"yug_server/global"
+	"yug_server/internal/config"
 )
 
 func StartServer() {
@@ -29,6 +29,21 @@ func StartServer() {
 	// 开启定时器
 	// go utils.TickerUse()
 	// 初始化路由
+
+	// 注册模块
+	modules := []Module{
+		&ChatModule{},
+		&UserModule{},
+	}
+
+	// 初始化模块
+	for _, module := range modules {
+		if err := module.Initialize(global.DB, global.Logger); err != nil {
+			fmt.Println("模块初始化失败: ", err)
+			os.Exit(1)
+		}
+	}
+
 	config.Routerinternal()
 
 	config.GinInternal()

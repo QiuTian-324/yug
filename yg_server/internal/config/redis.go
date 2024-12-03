@@ -3,7 +3,7 @@ package config
 import (
 	"context"
 	"fmt"
-	"gin_template/pkg"
+	"yug_server/pkg"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/spf13/viper"

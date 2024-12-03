@@ -1,7 +1,7 @@
 package pkg
 
 import (
-	"gin_template/global"
+	"yug_server/global"
 
 	"go.uber.org/zap"
 )

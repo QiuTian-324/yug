@@ -1,4 +1,4 @@
-module gin_template
+module yug_server
 
 go 1.22.1
 
@@ -11,10 +11,16 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/yitter/idgenerator-go v1.3.3
 	go.uber.org/zap v1.27.0
-	golang.org/x/crypto v0.23.0
+	golang.org/x/crypto v0.23.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/gorm v1.25.10
+)
+
+require (
+	github.com/google/wire v0.6.0
+	github.com/spf13/cast v1.7.0
+	golang.org/x/oauth2 v0.24.0
 )
 
 require (
@@ -50,7 +56,6 @@ require (
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
-	github.com/spf13/cast v1.7.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect

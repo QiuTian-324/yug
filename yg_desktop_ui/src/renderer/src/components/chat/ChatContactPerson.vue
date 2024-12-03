@@ -50,10 +50,10 @@ const treeData = computed(() => [
   {
     title: '好友',
     key: 'friend',
-    children: store.friendList.map((friend) => ({
+    children: store.friendList ? store.friendList.map((friend) => ({
       title: friend.username,
       key: `friend-${friend.user_id}`
-    }))
+    })) : []
   }
 ])
 

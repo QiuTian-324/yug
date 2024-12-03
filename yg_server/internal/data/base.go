@@ -8,7 +8,7 @@ import (
 
 // BaseModel 所有模型的基类，包含ID，创建时间，更新时间，删除时间（软删除字段）以及删除标志
 type BaseModel struct {
-	ID        uint           `gorm:"primaryKey" json:"id"`
+	ID        uint64         `gorm:"primaryKey" json:"id"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"` // 软删除字段，使用 gorm 的 DeletedAt 类型

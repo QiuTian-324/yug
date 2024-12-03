@@ -1,7 +1,7 @@
 package api
 
 import (
-	"gin_template/internal/libs"
+	"yug_server/internal/libs"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,5 +19,5 @@ func CollectRoutes(router *gin.Engine) {
 	// 注册用户路由
 	RegisterUserRoutes(api)
 	// 注册聊天路由
-	RegisterChatRoutes(api)
+	// RegisterChatRoutes(api)
 }

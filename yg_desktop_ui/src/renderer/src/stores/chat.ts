@@ -21,14 +21,15 @@ export const useChatStore = defineStore('chat', () => {
     };
 
     ws.value.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      messages.value.push(message);
-      console.log('收到消息:', message);
+      console.log('Received message:', event.data);
+      const message = JSON.parse(event.data)
+      messages.value.push(message)
+      console.log('收到消息:', message)
     };
 
     ws.value.onclose = () => {
-      isConnected.value = false;
-      console.log('WebSocket 连接已关闭');
+      isConnected.value = false
+      console.log('WebSocket 连接已关闭')
     };
 
     ws.value.onerror = (error) => {

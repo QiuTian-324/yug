@@ -2,7 +2,7 @@ package utils
 
 import (
 	"fmt"
-	"gin_template/global"
+	"yug_server/global"
 )
 
 func TickerUse() {

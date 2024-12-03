@@ -2,10 +2,10 @@ package middleware
 
 import (
 	"fmt"
-	"gin_template/global"
-	"gin_template/internal/libs"
-	"gin_template/pkg"
 	"strings"
+	"yug_server/global"
+	"yug_server/internal/libs"
+	"yug_server/pkg"
 
 	"github.com/gin-gonic/gin"
 )

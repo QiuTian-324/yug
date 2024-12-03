@@ -1,9 +1,8 @@
 package libs
 
 import (
-	"gin_template/internal/data/chat"
-	"gin_template/internal/data/user"
-	"gin_template/pkg"
+	"yug_server/internal/data/user/model"
+	"yug_server/pkg"
 
 	"gorm.io/gorm"
 )
@@ -11,10 +10,10 @@ import (
 // AutoMigrate 自动迁移数据库表结构
 func AutoMigrate(db *gorm.DB) error {
 	err := db.AutoMigrate(
-		&user.UserSetting{},
-		&user.User{},
-		&user.Friend{},
-		&chat.Chat{},
+		&model.UserSetting{},
+		&model.User{},
+		&model.Friend{},
+		// &chat.ChatMsg{},
 	)
 	if err != nil {
 		return err

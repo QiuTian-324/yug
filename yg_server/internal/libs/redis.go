@@ -2,8 +2,8 @@ package libs
 
 import (
 	"context"
-	"gin_template/global"
 	"time"
+	"yug_server/global"
 )
 
 // Set 设置键值对

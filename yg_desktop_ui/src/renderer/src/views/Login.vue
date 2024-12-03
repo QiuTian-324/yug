@@ -113,6 +113,7 @@
         </div>
         <!-- 第三方登录 -->
         <div class="mt-4 flex justify-center gap-4">
+          <GithubOutlined @click="thirdPartyLogin('github')" class="text-2xl cursor-pointer" />
           <WechatOutlined @click="thirdPartyLogin('wechat')" class="text-2xl cursor-pointer" />
           <QqOutlined @click="thirdPartyLogin('qq')" class="text-2xl cursor-pointer" />
         </div>
@@ -122,7 +123,7 @@
 </template>
 <script setup lang="ts">
 import { LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons-vue'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { UserStore } from '../stores/user'
 const { t } = useI18n()
@@ -148,6 +149,17 @@ const slides = [
   { image: image5, text: 'Slide 5' }
 ]
 
+onMounted(() => {
+  // 使用 URLSearchParams 来解析 URL
+  const params = new URLSearchParams(window.location.search)
+  if (params.has('code')) {
+    // 获取 code 参数的值
+    const code = params.get('code')
+    // 调用登录方法
+    store.LoginByGithubCode(code)
+  }
+})
+
 const handleLogin = async () => {
   if (loginType.value === 'username') {
     await store.LoginIn()
@@ -159,6 +171,10 @@ const handleLogin = async () => {
 
 const thirdPartyLogin = (provider: string) => {
   switch (provider) {
+    case 'github':
+      // 处理github登录
+      store.GithubLogin()
+      break
     case 'wechat':
       // 处理微信登录
       newWarningMessage(t('common.thisFeature'))

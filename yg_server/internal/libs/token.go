@@ -1,8 +1,8 @@
 package libs
 
 import (
-	"gin_template/pkg"
 	"time"
+	"yug_server/pkg"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/spf13/viper"
@@ -14,7 +14,7 @@ import (
 // 如果想要保存更多信息，都可以添加到这个结构体中
 type CustomClaims struct {
 	// 可根据需要自行添加字段
-	ID                   uint   `json:"id"`
+	ID                   uint64 `json:"id"`
 	Username             string `json:"username"`
 	Role                 int    `json:"role"`
 	jwt.RegisteredClaims        // 内嵌标准的声明
@@ -22,7 +22,7 @@ type CustomClaims struct {
 
 // GenToken 生成JWT
 
-func GenToken(id uint, username string) (string, error) {
+func GenToken(id uint64, username string) (string, error) {
 	// viper获取jwt密钥
 	var customSecret = []byte(viper.GetString("akita123"))
 

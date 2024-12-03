@@ -1,8 +1,8 @@
 package group
 
 import (
-	"gin_template/internal/data"
 	"time"
+	"yug_server/internal/data"
 )
 
 // Group 表的结构定义

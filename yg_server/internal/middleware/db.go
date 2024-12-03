@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"gin_template/global"
+	"yug_server/global"
 
 	"github.com/gin-gonic/gin"
 )

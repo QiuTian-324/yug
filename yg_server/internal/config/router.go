@@ -1,9 +1,9 @@
 package config
 
 import (
-	router "gin_template/api"
-	"gin_template/internal/libs"
-	"gin_template/internal/middleware"
+	router "yug_server/api"
+	"yug_server/internal/libs"
+	"yug_server/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
@@ -21,10 +21,10 @@ func Routerinternal() {
 	}
 	gin.SetMode(ginMode)
 	RouterGin = gin.New()
-	
+
 	RouterGin.Use(gin.Logger(), gin.Recovery()) // 日志
-	RouterGin.Use(middleware.InjectDB())        // 注入数据库
-	RouterGin.Use(middleware.Cors())            // 直接放行全部跨域请求
+	// RouterGin.Use(middleware.InjectDB())        // 注入数据库
+	RouterGin.Use(middleware.Cors()) // 直接放行全部跨域请求
 	router.CollectRoutes(RouterGin)
 
 	RouterGin.NoRoute(func(c *gin.Context) {

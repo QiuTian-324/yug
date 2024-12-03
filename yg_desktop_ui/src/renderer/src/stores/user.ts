@@ -18,7 +18,7 @@ export const UserStore = defineStore('user', () => {
   const addFriendModalVisible = ref(false)
   // 添加好友数据
   const addFriendData = ref<AddFriendRequest>({
-    username: ''
+    username: "12312"
   })
   // 添加好友表单
   const loginFormState = ref<LoginRequest>({
@@ -44,8 +44,33 @@ export const UserStore = defineStore('user', () => {
       return
     }
     getFriendList()
-    // chatStore.connectWebSocket(token.value)
+    chatStore.connectWebSocket(token.value)
   }
+
+  // github登录
+  const GithubLogin = async () => {
+    const returnUrl = Math.random().toString(36).substring(2) + new Date().getTime().toString();
+
+    const res: ApiResponse<any> = await Post<any>('/user/github/authURL', { state: returnUrl })
+
+    // 重定向到授权 URL
+    window.location.href = res.data.url;
+  }
+
+  // 通过github code登录
+  const LoginByGithubCode = async (code: string | null) => {
+    try {
+      const res: ApiResponse<any> = await Get<any>('/user/github/callback', { code })
+      token.value = res.data.token
+      localStorage.setItem('token', res.data.token)
+      router.push('/')
+      newSuccessMessage(t('success.login'))
+    } catch (error: any) {
+      newErrorMessage(t('fail.login'))
+      return error
+    }
+  }
+
 
   // 登录
   const LoginIn = async () => {
@@ -60,11 +85,12 @@ export const UserStore = defineStore('user', () => {
       return error
     }
   }
+
   // 添加好友
   const addFriend = async () => {
     addFriendModalVisible.value = true
     try {
-      await Post<ApiResponse<any>>('/user/add_friend', addFriendData.value)
+      await Post<ApiResponse<any>>('/user/add_friend', { username: addFriendData.value.username })
       newSuccessMessage(t('success.add_friend'))
     } catch (error: any) {
       newErrorMessage(t('fail.add_friend'))
@@ -108,7 +134,9 @@ export const UserStore = defineStore('user', () => {
     LoginIn,
     addFriend,
     getFriendList,
-    Init
+    Init,
+    GithubLogin,
+    LoginByGithubCode
   }
 }
   , {

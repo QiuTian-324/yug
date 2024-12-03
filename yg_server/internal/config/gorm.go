@@ -1,9 +1,9 @@
 package config
 
 import (
-	"gin_template/internal/libs"
-	"gin_template/pkg"
 	"time"
+	"yug_server/internal/libs"
+	"yug_server/pkg"
 
 	"github.com/spf13/viper"
 	"gorm.io/gorm"

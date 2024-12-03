@@ -6,7 +6,7 @@
     </div>
     <div class="flex-grow flex pr-4 py-4">
       <div class="min-w-[200px] rounded-l-xl overflow-hidden w-[200px] h-full bg-white">
-        <ChatList />
+        <ChatList v-if="store.selectedSidebar == 0 || store.selectedSidebar == 1" />
         <ChatContactPerson v-if="store.selectedSidebar == 1" />
       </div>
       <div class="flex-grow h-full rounded-r-xl text-black overflow-hidden bg-white">
