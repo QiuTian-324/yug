@@ -125,3 +125,17 @@ func (u *userRepo) QueryUserByPhone(ctx context.Context, phone string) (*model.U
 	}
 	return &user, nil
 }
+
+// 获取好友列表
+func (u *userRepo) GetFriends(ctx context.Context, userID uint64) ([]model.User, error) {
+	var user model.User
+
+	// 使用 Preload 预加载 Friends 关系
+	if err := u.db.Preload("Friends").First(&user, userID).Error; err != nil {
+		u.logger.Error("获取好友列表失败", zap.Error(err))
+		return nil, err
+	}
+
+	// 返回预加载的好友列表
+	return user.Friends, nil
+}

@@ -18,9 +18,10 @@ type Message struct {
 	Content    string      `json:"content"`     // 消息内容
 	URL        string      `json:"url"`         // 图片/文件/视频的 URL
 	FileName   string      `json:"file_name"`   // 文件名称
-	SenderID   uint64      `json:"sender_id"`   // 发送人ID
-	ReceiverID uint64      `json:"receiver_id"` // 接收人ID
-	GroupID    uint64      `json:"group_id"`    // 群ID
+	Size       string      `json:"size"`        // 文件大小
+	SenderID   string      `json:"sender_id"`   // 发送人ID
+	ReceiverID string      `json:"receiver_id"` // 接收人ID
+	GroupID    string      `json:"group_id"`    // 群ID
 	SendTime   time.Time   `json:"send_time"`   // 发送时间
 }
 
@@ -30,17 +31,20 @@ func NewMessage(
 	content string,
 	url string,
 	fileName string,
-	senderID uint64,
-	receiverID uint64,
-	groupID uint64,
+	size string,
+	senderID string,
+	receiverID string,
+	groupID string,
 ) *Message {
 	return &Message{
 		Type:       messageType,
 		Content:    content,
 		URL:        url,
 		FileName:   fileName,
+		Size:       size,
 		SenderID:   senderID,
 		ReceiverID: receiverID,
 		GroupID:    groupID,
+		SendTime:   time.Now(),
 	}
 }

@@ -2,10 +2,10 @@ package repo
 
 import (
 	"context"
-
-	"github.com/gorilla/websocket"
+	"yug_server/internal/data/chat/model"
 )
 
 type ChatRepo interface {
-	SendMessage(ctx context.Context, conn *websocket.Conn, messageData []byte) error
+	StoreOfflineMessage(ctx context.Context, msg model.ChatMsg) error
+	StoreOnlineMessage(ctx context.Context, msg model.ChatMsg) error
 }

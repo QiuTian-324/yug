@@ -2,9 +2,9 @@ package chat
 
 import (
 	"context"
+	"yug_server/internal/data/chat/model"
 	"yug_server/internal/repo"
 
-	"github.com/gorilla/websocket"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -20,18 +20,12 @@ func NewChatRepo(db *gorm.DB, rds *redis.Client, logger *zap.Logger) repo.ChatRe
 	return &chatRepo{db: db, rds: rds, logger: logger}
 }
 
-func (r *chatRepo) SendMessage(ctx context.Context, conn *websocket.Conn, messageData []byte) error {
-	return nil
+// 存储离线消息
+func (r *chatRepo) StoreOfflineMessage(ctx context.Context, msg model.ChatMsg) error {
+	return r.db.Create(&msg).Error
 }
 
-// func (r *chatRepo) Insert(msg *model.ChatMsg) error {
-// 	return r.DB.Create(msg).Error
-// }
-
-// func (r *chatRepo) GetById(id uint64) (*model.ChatMsg, error) {
-// 	var msg model.ChatMsg
-// 	if err := r.DB.Where("id = ?", id).First(&msg).Error; err != nil {
-// 		return nil, err
-// 	}
-// 	return &msg, nil
-// }
+// 存储在线消息
+func (r *chatRepo) StoreOnlineMessage(ctx context.Context, msg model.ChatMsg) error {
+	return r.db.Create(&msg).Error
+}

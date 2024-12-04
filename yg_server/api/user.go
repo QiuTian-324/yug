@@ -21,7 +21,7 @@ func RegisterUserRoutes(router *gin.RouterGroup) {
 	userGroup.Use(middleware.AuthMiddleware())
 	// userGroup.GET("/list", userHandler.GetUserSeesionList)
 	userGroup.POST("/add_friend", userHandler.AddFriend)
-	// userGroup.GET("/friends", userHandler.GetFriends)
+	userGroup.GET("/friends", userHandler.GetFriends)
 	userGroup.GET("/query", userHandler.QueryUser)
 	userGroup.POST("/logout", userHandler.Logout)
 }

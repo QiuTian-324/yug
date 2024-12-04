@@ -163,3 +163,7 @@ func (uc *UserUseCase) AddFriend(ctx context.Context, userID uint64, friendID ui
 	return nil
 }
 
+// 获取好友列表
+func (uc *UserUseCase) GetFriends(ctx context.Context, userID uint64) ([]model.User, error) {
+	return uc.repo.GetFriends(ctx, userID)
+}

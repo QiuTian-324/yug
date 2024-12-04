@@ -15,4 +15,5 @@ type UserRepo interface {
 	AddFriend(ctx context.Context, userID uint64, friendID uint64) error
 	IsFriend(ctx context.Context, userID uint64, friendID uint64) (bool, error)
 	IsUserExist(ctx context.Context, userID uint64) (bool, error)
+	GetFriends(ctx context.Context, userID uint64) ([]model.User, error)
 }

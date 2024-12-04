@@ -25,6 +25,7 @@ func NewUserHandler(uc *services.UserUseCase, rds *redis.Client, logger *zap.Log
 	return &UserHandler{uc: uc, rds: rds, logger: logger}
 }
 
+// 注册
 func (h *UserHandler) Register(ctx *gin.Context) {
 
 	req := new(dto.RegisterRequest)
@@ -43,6 +44,7 @@ func (h *UserHandler) Register(ctx *gin.Context) {
 	libs.SuccessResponse(ctx, "注册成功", nil)
 }
 
+// 登录
 func (h *UserHandler) Login(ctx *gin.Context) {
 
 	req := new(dto.LoginRequest)
@@ -80,9 +82,10 @@ func (h *UserHandler) Login(ctx *gin.Context) {
 		return
 	}
 
-	redisKey := fmt.Sprintf("%s%d", global.RedisSessionKey, userInfo.ID)
+	redisKey := fmt.Sprintf("%s:%d", global.UserRedisSessionKey, userInfo.ID)
 
-	err = libs.RedisSet(ctx, redisKey, token, time.Hour*time.Duration(viper.GetInt64("redis.expires")))
+	err = h.rds.Set(ctx, redisKey, token, time.Hour*time.Duration(viper.GetInt64("redis.expires"))).Err()
+	err = h.rds.Set(ctx, redisKey, token, time.Hour*time.Duration(viper.GetInt64("redis.expires"))).Err()
 	if err != nil {
 		h.logger.Error("设置redis失败", zap.Error(err))
 		libs.InternalServerErrorResponse(ctx, "登录失败")
@@ -98,6 +101,7 @@ func (h *UserHandler) Login(ctx *gin.Context) {
 	libs.AddExtra(ctx, response, map[string]interface{}{"token": token})
 }
 
+// 查询用户
 func (h *UserHandler) QueryUser(ctx *gin.Context) {
 	username := ctx.Query("username")
 	email := ctx.Query("email")
@@ -127,13 +131,16 @@ func (h *UserHandler) QueryUser(ctx *gin.Context) {
 
 	libs.SuccessResponse(ctx, "查询成功", res)
 }
+
+// 退出登录
 func (h *UserHandler) Logout(ctx *gin.Context) {
 	userID := ctx.MustGet("id").(uint64)
-	redisKey := fmt.Sprintf("%s%d", global.RedisSessionKey, userID)
-	libs.RedisDelete(ctx, redisKey)
+	redisKey := fmt.Sprintf("%s%d", global.UserRedisSessionKey, userID)
+	h.rds.Del(ctx, redisKey)
 	libs.SuccessResponse(ctx, "退出成功", nil)
 }
 
+// 添加好友
 func (h *UserHandler) AddFriend(ctx *gin.Context) {
 	req := new(dto.AddFriendRequest)
 	if err := ctx.ShouldBindJSON(req); err != nil {
@@ -164,4 +171,17 @@ func (h *UserHandler) AddFriend(ctx *gin.Context) {
 	}
 
 	libs.SuccessResponse(ctx, "添加成功", nil)
+}
+
+// 获取好友列表
+func (h *UserHandler) GetFriends(ctx *gin.Context) {
+	userID := ctx.MustGet("id").(uint64)
+	friends, err := h.uc.GetFriends(ctx, userID)
+	if err != nil {
+		h.logger.Error("获取好友列表失败", zap.Error(err))
+		libs.InternalServerErrorResponse(ctx, err.Error())
+		return
+	}
+
+	libs.SuccessResponse(ctx, "获取成功", friends)
 }

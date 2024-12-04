@@ -44,7 +44,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		// 检查 Redis 中是否存在 token
-		redisKey := fmt.Sprintf("%s%d", global.RedisSessionKey, currentUser.ID)
+		redisKey := fmt.Sprintf("%s:%d", global.UserRedisSessionKey, currentUser.ID)
 		_, err = libs.RedisGet(c, redisKey)
 		if err != nil {
 			pkg.Error("Redis 中不存在 token", err)
