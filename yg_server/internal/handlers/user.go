@@ -90,22 +90,13 @@ func (h *UserHandler) Login(ctx *gin.Context) {
 	}
 
 	res := dto.LoginResponse{
-		UserID:    cast.ToString(userInfo.ID),
-		Username:  userInfo.Username,
-		Nickname:  userInfo.Nickname,
-		AvatarUrl: userInfo.AvatarUrl,
-		Email:     userInfo.Email,
-		Phone:     userInfo.Phone,
-		Bio:       userInfo.Bio,
-		Online:    userInfo.Online,
+		UserID: cast.ToString(userInfo.ID),
 	}
 
 	// 使用 AddExtra 添加 token 作为额外字段
 	response := libs.NewResponse(libs.CodeSuccess, "登录成功", true, res, nil)
 	libs.AddExtra(ctx, response, map[string]interface{}{"token": token})
 }
-
-// 查询好友
 
 func (h *UserHandler) QueryUser(ctx *gin.Context) {
 	username := ctx.Query("username")
@@ -136,10 +127,41 @@ func (h *UserHandler) QueryUser(ctx *gin.Context) {
 
 	libs.SuccessResponse(ctx, "查询成功", res)
 }
-
 func (h *UserHandler) Logout(ctx *gin.Context) {
 	userID := ctx.MustGet("id").(uint64)
 	redisKey := fmt.Sprintf("%s%d", global.RedisSessionKey, userID)
 	libs.RedisDelete(ctx, redisKey)
 	libs.SuccessResponse(ctx, "退出成功", nil)
+}
+
+func (h *UserHandler) AddFriend(ctx *gin.Context) {
+	req := new(dto.AddFriendRequest)
+	if err := ctx.ShouldBindJSON(req); err != nil {
+		h.logger.Error("请求数据无效", zap.Error(err))
+		libs.BadRequestResponse(ctx, "请求数据无效")
+		return
+	}
+
+	userID := ctx.MustGet("id").(uint64)
+
+	if libs.ValidateEmpty(req.FriendID) {
+		h.logger.Error("好友ID不能为空")
+		libs.BadRequestResponse(ctx, "好友ID不能为空")
+		return
+	}
+
+	if userID == cast.ToUint64(req.FriendID) {
+		h.logger.Error("不能添加自己为好友")
+		libs.BadRequestResponse(ctx, "不能添加自己为好友")
+		return
+	}
+
+	err := h.uc.AddFriend(ctx, userID, cast.ToUint64(req.FriendID))
+	if err != nil {
+		h.logger.Error("添加好友失败", zap.Error(err))
+		libs.InternalServerErrorResponse(ctx, err.Error())
+		return
+	}
+
+	libs.SuccessResponse(ctx, "添加成功", nil)
 }

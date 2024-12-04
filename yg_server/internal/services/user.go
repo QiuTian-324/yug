@@ -22,6 +22,7 @@ func NewUserUseCase(repo repo.UserRepo, rds *redis.Client, logger *zap.Logger) *
 	return &UserUseCase{repo: repo, rds: rds, logger: logger}
 }
 
+// 注册
 func (uc *UserUseCase) Register(ctx context.Context, dto *dto.RegisterRequest) error {
 	err := uc.repo.Register(ctx, dto)
 	if err != nil {
@@ -31,6 +32,7 @@ func (uc *UserUseCase) Register(ctx context.Context, dto *dto.RegisterRequest) e
 	return nil
 }
 
+// 登录
 func (uc *UserUseCase) Login(ctx context.Context, username, password string) (*model.User, error) {
 
 	// 查询用户
@@ -82,6 +84,7 @@ type QueryByUsername struct {
 	uc       *UserUseCase
 }
 
+// 通过用户名查询用户
 func (q *QueryByUsername) Query(ctx context.Context) (*model.User, error) {
 	return q.uc.QueryUserByUsername(ctx, q.username)
 }
@@ -91,6 +94,7 @@ type QueryByEmail struct {
 	uc    *UserUseCase
 }
 
+// 通过邮箱查询用户
 func (q *QueryByEmail) Query(ctx context.Context) (*model.User, error) {
 	return q.uc.QueryUserByEmail(ctx, q.email)
 }
@@ -100,10 +104,12 @@ type QueryByPhone struct {
 	uc    *UserUseCase
 }
 
+// 通过手机号查询用户
 func (q *QueryByPhone) Query(ctx context.Context) (*model.User, error) {
 	return q.uc.QueryUserByPhone(ctx, q.phone)
 }
 
+// 通过用户名、邮箱或手机号查询用户
 func (uc *UserUseCase) QueryUser(ctx context.Context, username, email, phone string) (*model.User, error) {
 	// 定义一个映射，将查询类型与对应的策略绑定
 	strategies := map[string]QueryStrategy{
@@ -127,3 +133,33 @@ func (uc *UserUseCase) QueryUser(ctx context.Context, username, email, phone str
 
 	return nil, fmt.Errorf("请输入用户名、邮箱或手机号")
 }
+
+// 添加好友
+func (uc *UserUseCase) AddFriend(ctx context.Context, userID uint64, friendID uint64) error {
+
+	// 检查用户是否存在
+	isUserExist, _ := uc.repo.IsUserExist(ctx, friendID)
+
+	if !isUserExist {
+		uc.logger.Error("当前用户不存在")
+		return fmt.Errorf("当前用户不存在")
+	}
+
+	// 检查是否为好友
+	isFriend, _ := uc.repo.IsFriend(ctx, userID, friendID)
+
+	if isFriend {
+		uc.logger.Error("当前用户已经是好友")
+		return fmt.Errorf("你们已经是好友")
+	}
+
+	// 添加好友
+	err := uc.repo.AddFriend(ctx, userID, friendID)
+	if err != nil {
+		uc.logger.Error("添加好友失败", zap.Error(err))
+		return err
+	}
+
+	return nil
+}
+

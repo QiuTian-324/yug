@@ -26,32 +26,3 @@ type User struct {
 func (User) TableName() string {
 	return "users"
 }
-
-// UserSetting 表的结构定义
-type UserSetting struct {
-	data.BaseModel
-	UserID               int64  `gorm:"type:bigint;not null" json:"user_id"`                 // 用户 ID
-	ReceiveNotifications int    `gorm:"type:tinyint;default:1" json:"receive_notifications"` // 是否接收通知（1: 接收, 0: 不接收）
-	AllowStrangers       int    `gorm:"type:tinyint;default:0" json:"allow_strangers"`       // 是否允许陌生人添加好友（1: 允许, 0: 禁止）
-	Theme                string `gorm:"type:varchar(50);default:'light'" json:"theme"`       // 界面主题（light/dark）
-}
-
-// 表名
-func (UserSetting) TableName() string {
-	return "user_settings"
-}
-
-// Friend 表的结构定义
-type Friend struct {
-	data.BaseModel
-	UserID   uint64 `gorm:"type:bigint;not null" json:"user_id"`   // 当前用户 ID
-	FriendID uint64 `gorm:"type:bigint;not null" json:"friend_id"` // 好友用户 ID
-	Status   int    `gorm:"type:tinyint;default:0" json:"status"`  // 好友状态（0: 待接受, 1: 已接受, 2: 拒绝）
-	User     User   `gorm:"foreignKey:UserID;references:ID"`       // 当前用户
-	Friend   User   `gorm:"foreignKey:FriendID;references:ID"`     // 好友用户
-}
-
-// 表名
-func (Friend) TableName() string {
-	return "friends"
-}

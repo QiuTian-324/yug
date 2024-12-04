@@ -20,7 +20,7 @@ func RegisterUserRoutes(router *gin.RouterGroup) {
 	// 需要鉴权的接口
 	userGroup.Use(middleware.AuthMiddleware())
 	// userGroup.GET("/list", userHandler.GetUserSeesionList)
-	// userGroup.POST("/add_friend", userHandler.AddFriend)
+	userGroup.POST("/add_friend", userHandler.AddFriend)
 	// userGroup.GET("/friends", userHandler.GetFriends)
 	userGroup.GET("/query", userHandler.QueryUser)
 	userGroup.POST("/logout", userHandler.Logout)

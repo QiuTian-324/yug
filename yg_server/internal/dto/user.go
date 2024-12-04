@@ -13,14 +13,7 @@ type LoginRequest struct {
 }
 
 type LoginResponse struct {
-	UserID    string `json:"user_id"`
-	Username  string `json:"username"`
-	Nickname  string `json:"nickname"`
-	AvatarUrl string `json:"avatar_url"`
-	Email     string `json:"email"`
-	Phone     string `json:"phone"`
-	Bio       string `json:"bio"`
-	Online    int    `json:"online"`
+	UserID string `json:"user_id"`
 }
 
 // 添加好友请求
