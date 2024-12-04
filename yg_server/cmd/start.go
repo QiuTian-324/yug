@@ -38,7 +38,7 @@ func StartServer() {
 
 	// 初始化模块
 	for _, module := range modules {
-		if err := module.Initialize(global.DB, global.Logger); err != nil {
+		if err := module.Initialize(global.DB, global.RedisClient, global.Logger); err != nil {
 			fmt.Println("模块初始化失败: ", err)
 			os.Exit(1)
 		}

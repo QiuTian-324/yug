@@ -7,24 +7,27 @@
 package cmd
 
 import (
+	"github.com/redis/go-redis/v9"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
+	"yug_server/internal/data/chat"
 	"yug_server/internal/data/user"
 	"yug_server/internal/handlers"
 	"yug_server/internal/services"
-	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 // Injectors from wire.go:
 
-func InitializeChatHandler(db *gorm.DB, logger *zap.Logger) *handlers.ChatHandler {
-	wsService := services.NewWsService(db, logger)
-	chatHandler := handlers.NewChatHandler(wsService, logger)
+func InitializeChatHandler(db *gorm.DB, rds *redis.Client, logger *zap.Logger) *handlers.ChatHandler {
+	chatRepo := chat.NewChatRepo(db, rds, logger)
+	wsUseCase := services.NewWsUseCase(chatRepo, rds, logger)
+	chatHandler := handlers.NewChatHandler(wsUseCase, rds, logger)
 	return chatHandler
 }
 
-func InitializeUserHandler(db *gorm.DB, logger *zap.Logger) *handlers.UserHandler {
-	userRepo := user.NewUserRepo(db, logger)
-	userUseCase := services.NewUserUseCase(userRepo, logger)
-	userHandler := handlers.NewUserHandler(userUseCase, logger)
+func InitializeUserHandler(db *gorm.DB, rds *redis.Client, logger *zap.Logger) *handlers.UserHandler {
+	userRepo := user.NewUserRepo(db, rds, logger)
+	userUseCase := services.NewUserUseCase(userRepo, rds, logger)
+	userHandler := handlers.NewUserHandler(userUseCase, rds, logger)
 	return userHandler
 }

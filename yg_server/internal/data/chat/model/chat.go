@@ -1,4 +1,4 @@
-package chat
+package model
 
 import (
 	"yug_server/internal/data"

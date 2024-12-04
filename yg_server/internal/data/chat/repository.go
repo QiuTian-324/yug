@@ -1,32 +1,37 @@
 package chat
 
 import (
+	"context"
+	"yug_server/internal/repo"
+
+	"github.com/gorilla/websocket"
+	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
-type ChatMsgRepositoryInterface interface {
-	Insert(msg *ChatMsg) error
-	GetById(id uint64) (*ChatMsg, error)
+type chatRepo struct {
+	db     *gorm.DB
+	rds    *redis.Client
+	logger *zap.Logger
 }
 
-type ChatMsgRepository struct {
-	DB  *gorm.DB
-	Log *zap.Logger
+func NewChatRepo(db *gorm.DB, rds *redis.Client, logger *zap.Logger) repo.ChatRepo {
+	return &chatRepo{db: db, rds: rds, logger: logger}
 }
 
-func NewChatMsgRepository(db *gorm.DB, logger *zap.Logger) ChatMsgRepositoryInterface {
-	return &ChatMsgRepository{DB: db, Log: logger}
+func (r *chatRepo) SendMessage(ctx context.Context, conn *websocket.Conn, messageData []byte) error {
+	return nil
 }
 
-func (r *ChatMsgRepository) Insert(msg *ChatMsg) error {
-	return r.DB.Create(msg).Error
-}
+// func (r *chatRepo) Insert(msg *model.ChatMsg) error {
+// 	return r.DB.Create(msg).Error
+// }
 
-func (r *ChatMsgRepository) GetById(id uint64) (*ChatMsg, error) {
-	var msg ChatMsg
-	if err := r.DB.Where("id = ?", id).First(&msg).Error; err != nil {
-		return nil, err
-	}
-	return &msg, nil
-}
+// func (r *chatRepo) GetById(id uint64) (*model.ChatMsg, error) {
+// 	var msg model.ChatMsg
+// 	if err := r.DB.Where("id = ?", id).First(&msg).Error; err != nil {
+// 		return nil, err
+// 	}
+// 	return &msg, nil
+// }

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"yug_server/internal/data/chat"
 	"yug_server/internal/data/user"
 	"yug_server/internal/handlers"
 	"yug_server/internal/services"
@@ -9,7 +10,8 @@ import (
 )
 
 var ChatHandlerSet = wire.NewSet(
-	services.NewWsService,
+	chat.NewChatRepo,
+	services.NewWsUseCase,
 	handlers.NewChatHandler,
 )
 

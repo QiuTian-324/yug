@@ -83,3 +83,13 @@ type GithubToken struct {
 	RefreshToken string `json:"refresh_token"`
 	Scope        string `json:"scope"`
 }
+
+// 查询好友响应
+type QueryUserResponse struct {
+	UserID    uint64 `json:"user_id"`
+	Username  string `json:"username"`
+	Nickname  string `json:"nickname"`
+	Email     string `json:"email"`
+	Phone     string `json:"phone"`
+	AvatarUrl string `json:"avatar_url"`
+}

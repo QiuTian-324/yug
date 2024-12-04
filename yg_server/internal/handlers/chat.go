@@ -1,4 +1,3 @@
-// internal/handlers/chat.go
 package handlers
 
 import (
@@ -6,16 +5,18 @@ import (
 	"yug_server/internal/services"
 
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
 
 type ChatHandler struct {
-	chatService services.WsService
-	logger      *zap.Logger
+	wc     *services.WsUseCase
+	rds    *redis.Client
+	logger *zap.Logger
 }
 
-func NewChatHandler(chatService *services.WsService, logger *zap.Logger) *ChatHandler {
-	return &ChatHandler{chatService: *chatService, logger: logger}
+func NewChatHandler(wc *services.WsUseCase, rds *redis.Client, logger *zap.Logger) *ChatHandler {
+	return &ChatHandler{wc: wc, rds: rds, logger: logger}
 }
 
 func (h *ChatHandler) Ws(ctx *gin.Context) {

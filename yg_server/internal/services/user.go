@@ -2,21 +2,24 @@ package services
 
 import (
 	"context"
+	"fmt"
 
 	"yug_server/internal/data/user/model"
 	"yug_server/internal/dto"
 	"yug_server/internal/repo"
 
+	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
 
 type UserUseCase struct {
 	repo   repo.UserRepo
+	rds    *redis.Client
 	logger *zap.Logger
 }
 
-func NewUserUseCase(repo repo.UserRepo, logger *zap.Logger) *UserUseCase {
-	return &UserUseCase{repo: repo, logger: logger}
+func NewUserUseCase(repo repo.UserRepo, rds *redis.Client, logger *zap.Logger) *UserUseCase {
+	return &UserUseCase{repo: repo, rds: rds, logger: logger}
 }
 
 func (uc *UserUseCase) Register(ctx context.Context, dto *dto.RegisterRequest) error {
@@ -40,76 +43,87 @@ func (uc *UserUseCase) Login(ctx context.Context, username, password string) (*m
 	return userInfo, nil
 }
 
-// // 第三方登录
+// 按用户名查询用户
+func (uc *UserUseCase) QueryUserByUsername(ctx context.Context, username string) (*model.User, error) {
+	userInfo, err := uc.repo.QueryUserByUsername(ctx, username)
+	if err != nil {
+		uc.logger.Error("按用户名查询用户失败", zap.Error(err))
+		return nil, err
+	}
+	return userInfo, nil
+}
 
-// func LoginByThirdParty(db *gorm.DB, username string) (*user.User, error) {
-// 	// 查询用户
-// 	userInfo, err := user.GetByUsername(db, username)
-// 	if err != nil {
-// 		pkg.Error("用户不存在", err)
-// 		return nil, errors.New("当前账号未注册")
-// 	}
+// 按邮箱查询用户
+func (uc *UserUseCase) QueryUserByEmail(ctx context.Context, email string) (*model.User, error) {
+	userInfo, err := uc.repo.QueryUserByEmail(ctx, email)
+	if err != nil {
+		uc.logger.Error("按邮箱查询用户失败", zap.Error(err))
+		return nil, err
+	}
+	return userInfo, nil
+}
 
-// 	// 更改当前用户的在线状态
-// 	user := new(user.User)
-// 	user.ID = userInfo.ID
-// 	user.Online = 1
-// 	err = user.SetOnline(db)
-// 	if err != nil {
-// 		pkg.Error("设置在线状态失败", err)
-// 		return nil, errors.New("登陆失败")
-// 	}
+// 按手机号查询用户
+func (uc *UserUseCase) QueryUserByPhone(ctx context.Context, phone string) (*model.User, error) {
+	userInfo, err := uc.repo.QueryUserByPhone(ctx, phone)
+	if err != nil {
+		uc.logger.Error("按手机号查询用户失败", zap.Error(err))
+		return nil, err
+	}
+	return userInfo, nil
+}
 
-// 	return userInfo, nil
-// }
+type QueryStrategy interface {
+	Query(ctx context.Context) (*model.User, error)
+}
 
-// func (uc *UserUseCase) AddFriend(ctx context.Context, userID uint64, friendID uint64) error {
+type QueryByUsername struct {
+	username string
+	uc       *UserUseCase
+}
 
-// 	// 根据用户名查找好友
-// 	err := uc.repo.AddFriend(ctx, userID, friendID)
-// 	if err != nil {
-// 		uc.logger.Error("添加好友失败", zap.Error(err))
-// 		return err
-// 	}
-// 	// isFriend, _ := uc.repo.IsFriend(ctx, userID, friendInfo.ID)
+func (q *QueryByUsername) Query(ctx context.Context) (*model.User, error) {
+	return q.uc.QueryUserByUsername(ctx, q.username)
+}
 
-// 	// if isFriend {
-// 	// 	pkg.Info("已经是好友了")
-// 	// 	return errors.New("你们已经是好友了")
-// 	// }
+type QueryByEmail struct {
+	email string
+	uc    *UserUseCase
+}
 
-// 	// if friendInfo.ID == userID {
-// 	// 	pkg.Error("不能添加自己为好友", nil)
-// 	// 	return errors.New("不能添加自己为好友")
-// 	// }
+func (q *QueryByEmail) Query(ctx context.Context) (*model.User, error) {
+	return q.uc.QueryUserByEmail(ctx, q.email)
+}
 
-// 	// err = user.AddFriend(db, userID, friendInfo.ID)
-// 	// if err != nil {
-// 	// 	pkg.Error("添加好友失败", err)
-// 	// 	return errors.New("添加好友失败")
-// 	// }
-// 	return nil
-// }
+type QueryByPhone struct {
+	phone string
+	uc    *UserUseCase
+}
 
-// func (uc *UserUseCase) GetFriends(ctx context.Context, userID uint64) ([]dto.FriendListResponse, error) {
-// 	friends, err := uc.repo.GetFriends(ctx, userID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	var friendList []dto.FriendListResponse
+func (q *QueryByPhone) Query(ctx context.Context) (*model.User, error) {
+	return q.uc.QueryUserByPhone(ctx, q.phone)
+}
 
-// 	for _, friend := range friends {
-// 		friendList = append(friendList, dto.FriendListResponse{
-// 			UserID:    friend.ID,
-// 			Username:  friend.Username,
-// 			Nickname:  friend.Nickname,
-// 			Email:     friend.Email,
-// 			Phone:     friend.Phone,
-// 			AvatarUrl: friend.AvatarUrl,
-// 			Bio:       friend.Bio,
-// 			Online:    friend.Online,
-// 		})
-// 	}
+func (uc *UserUseCase) QueryUser(ctx context.Context, username, email, phone string) (*model.User, error) {
+	// 定义一个映射，将查询类型与对应的策略绑定
+	strategies := map[string]QueryStrategy{
+		"username": &QueryByUsername{username: username, uc: uc},
+		"email":    &QueryByEmail{email: email, uc: uc},
+		"phone":    &QueryByPhone{phone: phone, uc: uc},
+	}
 
-// 	return friendList, nil
-// }
+	// 遍历映射，选择第一个非空的策略
+	for key, strategy := range strategies {
+		if key == "username" && username != "" {
+			return strategy.Query(ctx)
+		}
+		if key == "email" && email != "" {
+			return strategy.Query(ctx)
+		}
+		if key == "phone" && phone != "" {
+			return strategy.Query(ctx)
+		}
+	}
+
+	return nil, fmt.Errorf("请输入用户名、邮箱或手机号")
+}
