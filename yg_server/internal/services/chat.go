@@ -5,12 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
+	"sync"
 	"time"
 	"yug_server/global"
 	"yug_server/internal/data/chat/model"
 	"yug_server/internal/dto"
-	"yug_server/internal/libs"
 	"yug_server/internal/repo"
 	"yug_server/utils"
 
@@ -21,13 +20,20 @@ import (
 )
 
 type WsUseCase struct {
-	repo   repo.ChatRepo
-	rds    *redis.Client
-	logger *zap.Logger
+	repo               repo.ChatRepo
+	rds                *redis.Client
+	logger             *zap.Logger
+	mu                 sync.Mutex
+	userConnectionsMap map[string]*websocket.Conn
 }
 
 func NewWsUseCase(repo repo.ChatRepo, rds *redis.Client, logger *zap.Logger) *WsUseCase {
-	return &WsUseCase{repo: repo, rds: rds, logger: logger}
+	return &WsUseCase{
+		repo:               repo,
+		rds:                rds,
+		logger:             logger,
+		userConnectionsMap: make(map[string]*websocket.Conn),
+	}
 }
 
 // 发送消息
@@ -39,25 +45,10 @@ func (s *WsUseCase) SendMessage(conn *websocket.Conn, messageData []byte) error 
 		return err
 	}
 
-	// 根据消息类型处理内容
-	switch msg.Type {
-	case dto.TextMessageType:
-		msg.URL = ""
-		msg.FileName = ""
-		msg.Size = ""
-		
-		if utils.CheckSensitiveWords(msg.Content) {
-			s.logger.Warn("消息包含敏感词")
-			return errors.New("消息包含敏感词")
-		}
-	case dto.ImageMessageType:
-		msg.Content = "[图片消息]"
-	case dto.FileMessageType:
-		msg.Content = "[文件消息]"
-	case dto.VideoMessageType:
-		msg.Content = "[视频消息]"
-	default:
-		msg.Content = "[未知消息]"
+	handler := GetMessageHandler(msg.Type, s.logger)
+	err = handler.HandleMessage(&msg)
+	if err != nil {
+		return err
 	}
 
 	msgResponse := dto.NewMessage(
@@ -69,6 +60,7 @@ func (s *WsUseCase) SendMessage(conn *websocket.Conn, messageData []byte) error 
 		msg.SenderID,
 		msg.ReceiverID,
 		msg.GroupID,
+		msg.Receiver,
 	)
 	// 发送消息给自己
 	err = conn.WriteJSON(msgResponse)
@@ -119,33 +111,41 @@ func (s *WsUseCase) SendMessage(conn *websocket.Conn, messageData []byte) error 
 
 // 添加连接
 func (s *WsUseCase) AddConnection(userID uint64, conn *websocket.Conn) {
-	libs.Mu.Lock()
-	libs.UserConnectionsMap[cast.ToString(userID)] = conn
-	libs.Mu.Unlock()
+	s.mu.Lock()
+	s.userConnectionsMap[cast.ToString(userID)] = conn
+	s.mu.Unlock()
 
-	redisKey := fmt.Sprintf("%s:%s", global.ChatRedisOnline, cast.ToString(userID))
-	err := s.rds.Set(context.Background(), redisKey, "true", time.Hour*24).Err()
+	// 将用户ID添加到在线用户集合中
+	redisKey := global.ChatRedisOnline
+	err := s.rds.SAdd(context.Background(), redisKey, cast.ToString(userID)).Err()
 	if err != nil {
-		s.logger.Error("设置用户在线状态失败", zap.Error(err))
+		s.logger.Error("添加用户到在线集合失败", zap.Error(err))
 	}
 }
 
 // 移除连接
 func (s *WsUseCase) RemoveConnection(userID uint64) {
-	libs.Mu.Lock()
-	delete(libs.UserConnectionsMap, cast.ToString(userID))
-	libs.Mu.Unlock()
+	s.mu.Lock()
+	delete(s.userConnectionsMap, cast.ToString(userID))
+	s.mu.Unlock()
 
-	// 从 Redis 中删除用户在线状态
-	redisKey := fmt.Sprintf("%s:%s", global.ChatRedisOnline, cast.ToString(userID))
-	s.rds.Del(context.Background(), redisKey)
+	// 从在线用户集合中移除用户ID
+	redisKey := global.ChatRedisOnline
+	s.rds.SRem(context.Background(), redisKey, cast.ToString(userID))
 }
 
 // 获取接收者的连接
 func (s *WsUseCase) GetReceiverConnection(receiverID uint64) *websocket.Conn {
-	libs.Mu.Lock()
-	defer libs.Mu.Unlock()
-	return libs.UserConnectionsMap[cast.ToString(receiverID)]
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	conn, exists := s.userConnectionsMap[cast.ToString(receiverID)]
+	if !exists {
+		s.logger.Error("接收者连接不存在")
+		return nil
+	}
+
+	return conn
 }
 
 // 心跳检测
@@ -162,18 +162,21 @@ func (s *WsUseCase) Heartbeat(conn *websocket.Conn, userID uint64) {
 		}
 	}
 }
+
+// 判断用户是否在线
 func (s *WsUseCase) IsUserOnline(userID uint64) bool {
-	redisKey := fmt.Sprintf("%s:%s", global.ChatRedisOnline, cast.ToString(userID))
-	onlineStatus, err := s.rds.Get(context.Background(), redisKey).Result()
+	redisKey := global.ChatRedisOnline
+	isMember, err := s.rds.SIsMember(context.Background(), redisKey, cast.ToString(userID)).Result()
 	if err != nil {
 		s.logger.Error("获取用户在线状态失败", zap.Error(err))
 		return false
 	}
-	s.logger.Info("用户在线状态", zap.String("onlineStatus", onlineStatus))
+	s.logger.Info("用户在线状态", zap.Bool("isOnline", isMember))
 
-	return onlineStatus == "true"
+	return isMember
 }
 
+// 存储离线消息
 func (s *WsUseCase) StoreOfflineMessage(msg dto.Message) error {
 
 	offlineMsg := model.ChatMsg{
@@ -198,6 +201,7 @@ func (s *WsUseCase) StoreOfflineMessage(msg dto.Message) error {
 	return nil
 }
 
+// 获取消息类型对应的整数
 func (s *WsUseCase) getContentTypeInt(msgType dto.MessageType) int {
 	// 定义消息类型到整数的映射
 	messageTypeToInt := map[dto.MessageType]int{
@@ -207,4 +211,73 @@ func (s *WsUseCase) getContentTypeInt(msgType dto.MessageType) int {
 		dto.VideoMessageType: model.ContentTypeVideo,
 	}
 	return messageTypeToInt[msgType]
+}
+
+// 定义消息处理接口
+type MessageHandler interface {
+	HandleMessage(msg *dto.Message) error
+}
+
+// 文本消息处理器
+type TextMessageHandler struct {
+	logger *zap.Logger
+}
+
+func (h *TextMessageHandler) HandleMessage(msg *dto.Message) error {
+	msg.URL = ""
+	msg.FileName = ""
+	msg.Size = ""
+
+	if utils.CheckSensitiveWords(msg.Content) {
+		h.logger.Warn("消息包含敏感词")
+		return errors.New("消息包含敏感词")
+	}
+	return nil
+}
+
+// 图片消息处理器
+type ImageMessageHandler struct{}
+
+func (h *ImageMessageHandler) HandleMessage(msg *dto.Message) error {
+	msg.Content = "[图片消息]"
+	return nil
+}
+
+// 文件消息处理器
+type FileMessageHandler struct{}
+
+func (h *FileMessageHandler) HandleMessage(msg *dto.Message) error {
+	msg.Content = "[文件消息]"
+	return nil
+}
+
+// 视频消息处理器
+type VideoMessageHandler struct{}
+
+func (h *VideoMessageHandler) HandleMessage(msg *dto.Message) error {
+	msg.Content = "[视频消息]"
+	return nil
+}
+
+// 未知消息处理器
+type UnknownMessageHandler struct{}
+
+func (h *UnknownMessageHandler) HandleMessage(msg *dto.Message) error {
+	msg.Content = "[未知消息]"
+	return nil
+}
+
+func GetMessageHandler(msgType dto.MessageType, logger *zap.Logger) MessageHandler {
+	switch msgType {
+	case dto.TextMessageType:
+		return &TextMessageHandler{logger: logger}
+	case dto.ImageMessageType:
+		return &ImageMessageHandler{}
+	case dto.FileMessageType:
+		return &FileMessageHandler{}
+	case dto.VideoMessageType:
+		return &VideoMessageHandler{}
+	default:
+		return &UnknownMessageHandler{}
+	}
 }

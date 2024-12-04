@@ -6,10 +6,12 @@ import "time"
 type MessageType string
 
 const (
-	TextMessageType  MessageType = "text"
-	ImageMessageType MessageType = "image"
-	FileMessageType  MessageType = "file"
-	VideoMessageType MessageType = "video"
+	TextMessageType   MessageType = "text"
+	ImageMessageType  MessageType = "image"
+	FileMessageType   MessageType = "file"
+	VideoMessageType  MessageType = "video"
+	SystemMessageType MessageType = "system"
+	NoticeMessageType MessageType = "notice"
 )
 
 // Message 定义通用的消息结构体
@@ -21,6 +23,7 @@ type Message struct {
 	Size       string      `json:"size"`        // 文件大小
 	SenderID   string      `json:"sender_id"`   // 发送人ID
 	ReceiverID string      `json:"receiver_id"` // 接收人ID
+	Receiver   string      `json:"receiver"`    // 接收者
 	GroupID    string      `json:"group_id"`    // 群ID
 	SendTime   time.Time   `json:"send_time"`   // 发送时间
 }
@@ -35,6 +38,7 @@ func NewMessage(
 	senderID string,
 	receiverID string,
 	groupID string,
+	receiver string,
 ) *Message {
 	return &Message{
 		Type:       messageType,
@@ -45,6 +49,7 @@ func NewMessage(
 		SenderID:   senderID,
 		ReceiverID: receiverID,
 		GroupID:    groupID,
+		Receiver:   receiver,
 		SendTime:   time.Now(),
 	}
 }

@@ -15,5 +15,5 @@ func RegisterChatRoutes(router *gin.RouterGroup) {
 	// websocket连接
 	chatGroup.GET("/ws", chatHandler.Ws)
 	// 获取离线消息
-	chatGroup.GET("/offline-messages", chatHandler.GetOfflineMessages)
+	// chatGroup.GET("/offline-messages", chatHandler.GetOfflineMessages)
 }
