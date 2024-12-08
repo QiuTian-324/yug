@@ -21,4 +21,5 @@ var (
 	ChatRedisDataCacheKey string = fmt.Sprintf("%s:%s", ChatRedisPrefix, "data_cache") // ChatRedisDataCacheKey 缓存相关的前缀
 	ChatRedisOnline       string = fmt.Sprintf("%s:%s", ChatRedisPrefix, "online")     // ChatRedisOnline 用户在线状态
 	ChatRedisConnKey      string = fmt.Sprintf("%s:%s", ChatRedisPrefix, "conn")       // ChatRedisConnKey 用户连接信息
+	ChatRedisUniqueID     string = fmt.Sprintf("%s:%s", ChatRedisPrefix, "unique_id")  // ChatRedisUniqueID 消息唯一标识
 )

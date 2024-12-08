@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 	"yug_server/global"
@@ -45,6 +46,25 @@ func (s *WsUseCase) SendMessage(conn *websocket.Conn, messageData []byte) error 
 		return err
 	}
 
+	// 检查消息的唯一标识是否已经存在
+	redisKey := fmt.Sprintf("%s:%s", global.ChatRedisUniqueID, msg.UniqueID)
+	isMember, err := s.rds.SIsMember(context.Background(), redisKey, msg.UniqueID).Result()
+	if err != nil {
+		s.logger.Error("检查消息唯一标识失败", zap.Error(err))
+		return err
+	}
+	if isMember {
+		s.logger.Warn("消息已存在，忽略重复消息", zap.String("UniqueID", msg.UniqueID))
+		return nil
+	}
+
+	// 将UniqueID添加到Redis集合中
+	err = s.rds.SAdd(context.Background(), redisKey, msg.UniqueID).Err()
+	if err != nil {
+		s.logger.Error("添加消息唯一标识失败", zap.Error(err))
+		return err
+	}
+
 	handler := GetMessageHandler(msg.Type, s.logger)
 	err = handler.HandleMessage(&msg)
 	if err != nil {
@@ -54,9 +74,10 @@ func (s *WsUseCase) SendMessage(conn *websocket.Conn, messageData []byte) error 
 	msgResponse := dto.NewMessage(
 		msg.Type,
 		msg.Content,
+		msg.UniqueID,
 		msg.URL,
-		msg.Size,
 		msg.FileName,
+		msg.Size,
 		msg.SenderID,
 		msg.ReceiverID,
 		msg.GroupID,
@@ -116,7 +137,7 @@ func (s *WsUseCase) AddConnection(userID uint64, conn *websocket.Conn) {
 	s.mu.Unlock()
 
 	// 将用户ID添加到在线用户集合中
-	redisKey := global.ChatRedisOnline
+	redisKey := fmt.Sprintf("%s:%s", global.ChatRedisOnline, cast.ToString(userID))
 	err := s.rds.SAdd(context.Background(), redisKey, cast.ToString(userID)).Err()
 	if err != nil {
 		s.logger.Error("添加用户到在线集合失败", zap.Error(err))
@@ -130,7 +151,7 @@ func (s *WsUseCase) RemoveConnection(userID uint64) {
 	s.mu.Unlock()
 
 	// 从在线用户集合中移除用户ID
-	redisKey := global.ChatRedisOnline
+	redisKey := fmt.Sprintf("%s:%s", global.ChatRedisOnline, cast.ToString(userID))
 	s.rds.SRem(context.Background(), redisKey, cast.ToString(userID))
 }
 
@@ -163,9 +184,9 @@ func (s *WsUseCase) Heartbeat(conn *websocket.Conn, userID uint64) {
 	}
 }
 
-// 判断用户是否在线
+// 判断用户是否在线	
 func (s *WsUseCase) IsUserOnline(userID uint64) bool {
-	redisKey := global.ChatRedisOnline
+	redisKey := fmt.Sprintf("%s:%s", global.ChatRedisOnline, cast.ToString(userID))
 	isMember, err := s.rds.SIsMember(context.Background(), redisKey, cast.ToString(userID)).Result()
 	if err != nil {
 		s.logger.Error("获取用户在线状态失败", zap.Error(err))
@@ -279,5 +300,28 @@ func GetMessageHandler(msgType dto.MessageType, logger *zap.Logger) MessageHandl
 		return &VideoMessageHandler{}
 	default:
 		return &UnknownMessageHandler{}
+	}
+}
+
+// 用户连接时检查离线消息
+func (s *WsUseCase) OnUserConnect(userID uint64, conn *websocket.Conn) {
+	// 添加连接
+	s.AddConnection(userID, conn)
+
+	// 检查并推送离线消息
+	offlineMessages, err := s.repo.GetOfflineMessages(context.Background(), userID)
+	if err != nil {
+		s.logger.Error("获取离线消息失败", zap.Error(err))
+		return
+	}
+
+	for _, msg := range offlineMessages {
+		err := conn.WriteJSON(msg)
+		if err != nil {
+			s.logger.Error("推送离线消息失败", zap.Error(err))
+			return
+		}
+		// 更新消息状态为已发送
+		s.repo.UpdateMessageStatus(context.Background(), cast.ToString(msg.ID), "sent")
 	}
 }

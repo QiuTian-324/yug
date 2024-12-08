@@ -29,3 +29,15 @@ func (r *chatRepo) StoreOfflineMessage(ctx context.Context, msg model.ChatMsg) e
 func (r *chatRepo) StoreOnlineMessage(ctx context.Context, msg model.ChatMsg) error {
 	return r.db.Create(&msg).Error
 }
+
+// 获取离线消息
+func (r *chatRepo) GetOfflineMessages(ctx context.Context, userID uint64) ([]model.ChatMsg, error) {
+	var messages []model.ChatMsg
+	err := r.db.Where("receiver_id = ? AND status = ?", userID, "1").Find(&messages).Error
+	return messages, err
+}
+
+// 更新消息状态
+func (r *chatRepo) UpdateMessageStatus(ctx context.Context, messageID string, status string) error {
+	return r.db.Model(&model.ChatMsg{}).Where("id = ?", messageID).Update("status", status).Error
+}

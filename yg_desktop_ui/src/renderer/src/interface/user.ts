@@ -4,7 +4,12 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  token: string;
+  data: {
+    user_id: string;
+  },
+  extra: {
+    token: string;
+  }
 }
 
 export interface UserInfoResponse {

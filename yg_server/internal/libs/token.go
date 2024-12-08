@@ -14,10 +14,10 @@ import (
 // 如果想要保存更多信息，都可以添加到这个结构体中
 type CustomClaims struct {
 	// 可根据需要自行添加字段
-	ID                   uint64 `json:"id"`
-	Username             string `json:"username"`
-	Role                 int    `json:"role"`
-	jwt.RegisteredClaims        // 内嵌标准的声明
+	ID       uint64 `json:"id"`
+	Username string `json:"username"`
+	Role     int    `json:"role"`
+	jwt.RegisteredClaims
 }
 
 // GenToken 生成JWT

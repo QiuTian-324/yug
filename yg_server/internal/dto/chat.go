@@ -17,6 +17,7 @@ const (
 // Message 定义通用的消息结构体
 type Message struct {
 	Type       MessageType `json:"type"`        // 消息类型
+	UniqueID   string      `json:"unique_id"`   // 唯一标识
 	Content    string      `json:"content"`     // 消息内容
 	URL        string      `json:"url"`         // 图片/文件/视频的 URL
 	FileName   string      `json:"file_name"`   // 文件名称
@@ -32,6 +33,7 @@ type Message struct {
 func NewMessage(
 	messageType MessageType,
 	content string,
+	uniqueID string,
 	url string,
 	fileName string,
 	size string,
@@ -43,6 +45,7 @@ func NewMessage(
 	return &Message{
 		Type:       messageType,
 		Content:    content,
+		UniqueID:   uniqueID,
 		URL:        url,
 		FileName:   fileName,
 		Size:       size,

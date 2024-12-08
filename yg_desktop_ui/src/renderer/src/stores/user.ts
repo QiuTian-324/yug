@@ -76,8 +76,8 @@ export const UserStore = defineStore('user', () => {
   const LoginIn = async () => {
     try {
       const res: ApiResponse<LoginResponse> = await Post<LoginResponse>('/user/login', loginFormState.value);
-      token.value = res.data.token
-      localStorage.setItem('token', res.data.token)
+      token.value = res.extra.token
+      localStorage.setItem('token', res.extra.token)
       router.push('/')
       newSuccessMessage(t('success.login'))
     } catch (error: any) {

@@ -1,4 +1,8 @@
+import { newWarningMessage } from '@renderer/pkg/messages';
+import router from '@renderer/router';
 import axios from 'axios';
+import i18n from '../i18n';
+const { t } = i18n.global
 /** 创建axios实例 */
 const request = axios.create({
   baseURL: "http://127.0.0.1:9000/api",
@@ -26,6 +30,11 @@ request.interceptors.response.use(
     return resp.data
   },
   (error: any) => {
+    if (error.response.status === 401) {
+      localStorage.removeItem("token");
+      newWarningMessage(t('login.loginFirst'));
+      router.push({ name: "login" });
+    }
     return Promise.reject(error.response.data)
   }
 )
@@ -36,6 +45,7 @@ export default request
 export interface ApiResponse<T> {
   code: number;
   data: T;
+  extra: any;
   message: string;
   success: boolean;
 }
