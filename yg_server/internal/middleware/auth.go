@@ -1,20 +1,19 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"strings"
-	"sync"
 	"time"
 	"yug_server/global"
 	"yug_server/internal/libs"
 	"yug_server/pkg"
 
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 )
 
 var blacklistedIPs = make(map[string]bool)
-var rateLimiter = make(map[string]*RateLimitInfo)
-var mu sync.Mutex
 
 type RateLimitInfo struct {
 	Requests      int
@@ -23,10 +22,28 @@ type RateLimitInfo struct {
 }
 
 const (
-	RateLimit          = 100
+	RateLimit          = 2
 	RateLimitTime      = time.Minute
 	BlacklistThreshold = 5
 )
+
+// 分布式速率限制
+func isRateLimited(ip string) bool {
+	key := fmt.Sprintf("rate_limit:%s", ip)
+	val, err := global.RedisClient.Get(context.Background(), key).Int()
+	if err != nil && err != redis.Nil {
+		pkg.Error("Redis错误", err)
+		return false
+	}
+
+	if val >= RateLimit {
+		return true
+	}
+
+	global.RedisClient.Incr(context.Background(), key)
+	global.RedisClient.Expire(context.Background(), key, RateLimitTime)
+	return false
+}
 
 // AuthToken token校验
 func AuthMiddleware() gin.HandlerFunc {
@@ -40,36 +57,14 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// 速率限制检查
-		mu.Lock()
-		if info, exists := rateLimiter[ip]; exists {
-			if time.Since(info.LastTime) < RateLimitTime {
-				if info.Requests >= RateLimit {
-					info.ExceededCount++
-					if info.ExceededCount >= BlacklistThreshold {
-						blacklistedIPs[ip] = true
-						mu.Unlock()
-						pkg.Error("IP被加入黑名单", nil)
-						libs.ForbiddenResponse(c, fmt.Sprintf("访问被拒绝，IP %s 被加入黑名单！", ip))
-						return
-					}
-					mu.Unlock()
-					pkg.Error("请求过于频繁", nil)
-					libs.UnauthorizedResponse(c, fmt.Sprintf("请求过于频繁，请稍后再试，IP %s 已记录！", ip))
-					return
-				}
-				info.Requests++
-			} else {
-				info.Requests = 1
-				info.LastTime = time.Now()
-				info.ExceededCount = 0
-			}
-		} else {
-			rateLimiter[ip] = &RateLimitInfo{Requests: 1, LastTime: time.Now()}
+		// 分布式速率限制检查
+		if isRateLimited(ip) {
+			pkg.Error("请求过于频繁", nil)
+			libs.TooManyRequestsResponse(c, fmt.Sprintf("请求过于频繁，请稍后再试，IP %s 已记录！", ip))
+			return
 		}
-		mu.Unlock()
 
-		// 优先从请求头获取 token
+		// 优先从��求头获取 token
 		token := c.Request.Header.Get("Authorization")
 
 		// 如果请求头中没有 token，尝试从查询参数中获取

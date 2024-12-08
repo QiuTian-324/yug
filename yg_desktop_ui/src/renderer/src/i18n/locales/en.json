@@ -86,6 +86,7 @@
     "login": "Login failed",
     "logout": "Logout failed",
     "register": "Registration failed",
-    "add_friend": "Add friend failed"
+    "add_friend": "Add friend failed",
+    "requestTooFrequent": "Request too frequent, please try again later"
   }
 }

@@ -73,6 +73,12 @@ func ForbiddenResponse(ctx *gin.Context, message string) {
 	sendResponse(ctx, http.StatusForbidden, response)
 }
 
+// TooManyRequestsResponse 返回请求过于频繁的响应
+func TooManyRequestsResponse(ctx *gin.Context, message string) {
+	response := NewResponse(CodeFail, message, false, nil, nil)
+	sendResponse(ctx, http.StatusTooManyRequests, response)
+}
+
 // BadRequestResponse 返回请求无效的响应
 func BadRequestResponse(ctx *gin.Context, message string) {
 	response := NewResponse(CodeFail, message, false, nil, nil)

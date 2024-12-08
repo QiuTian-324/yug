@@ -35,6 +35,9 @@ request.interceptors.response.use(
       newWarningMessage(t('login.loginFirst'));
       router.push({ name: "login" });
     }
+    if (error.response.status === 429) {
+      newWarningMessage(t('fail.requestTooFrequent'));
+    }
     return Promise.reject(error.response.data)
   }
 )
