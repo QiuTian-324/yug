@@ -10,6 +10,7 @@ import (
 	"time"
 	"yug_server/global"
 	"yug_server/internal/data/chat/model"
+	usermodel "yug_server/internal/data/user/model"
 	"yug_server/internal/dto"
 	"yug_server/internal/repo"
 	"yug_server/utils"
@@ -46,24 +47,27 @@ func (s *WsUseCase) SendMessage(conn *websocket.Conn, messageData []byte) error 
 		return err
 	}
 
-	// 检查消息的唯一标识是否已经存在
-	redisKey := fmt.Sprintf("%s:%s", global.ChatRedisUniqueID, msg.UniqueID)
-	isMember, err := s.rds.SIsMember(context.Background(), redisKey, msg.UniqueID).Result()
-	if err != nil {
-		s.logger.Error("检查消息唯一标识失败", zap.Error(err))
-		return err
-	}
-	if isMember {
-		s.logger.Warn("消息已存在，忽略重复消息", zap.String("UniqueID", msg.UniqueID))
-		return nil
-	}
+	// 打印userConnectionsMap
+	s.logger.Info("userConnectionsMap", zap.Any("userConnectionsMap", s.userConnectionsMap))
 
-	// 将UniqueID添加到Redis集合中
-	err = s.rds.SAdd(context.Background(), redisKey, msg.UniqueID).Err()
-	if err != nil {
-		s.logger.Error("添加消息唯一标识失败", zap.Error(err))
-		return err
-	}
+	// 检查消息的唯一标识是否已经存在 todo客户端生成uuid发送过来
+	// redisKey := fmt.Sprintf("%s:%s", global.ChatRedisUniqueID, msg.UniqueID)
+	// isMember, err := s.rds.SIsMember(context.Background(), redisKey, msg.UniqueID).Result()
+	// if err != nil {
+	// 	s.logger.Error("检查消息唯一标识失败", zap.Error(err))
+	// 	return err
+	// }
+	// if isMember {
+	// 	s.logger.Warn("消息已存在，忽略重复消息", zap.String("UniqueID", msg.UniqueID))
+	// 	return nil
+	// }
+
+	// // 将UniqueID添加到Redis集合中
+	// err = s.rds.SAdd(context.Background(), redisKey, msg.UniqueID).Err()
+	// if err != nil {
+	// 	s.logger.Error("添加消息唯一标识失败", zap.Error(err))
+	// 	return err
+	// }
 
 	handler := GetMessageHandler(msg.Type, s.logger)
 	err = handler.HandleMessage(&msg)
@@ -127,6 +131,9 @@ func (s *WsUseCase) SendMessage(conn *websocket.Conn, messageData []byte) error 
 		s.logger.Error("接收者连接不存在")
 	}
 
+	// 更新会话列表并缓存到 Redis
+	s.UpdateConversationList(msg)
+
 	return nil
 }
 
@@ -160,7 +167,10 @@ func (s *WsUseCase) GetReceiverConnection(receiverID uint64) *websocket.Conn {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	s.logger.Info("获取接收者的连接", zap.Uint64("receiverID", receiverID))
+
 	conn, exists := s.userConnectionsMap[cast.ToString(receiverID)]
+
 	if !exists {
 		s.logger.Error("接收者连接不存在")
 		return nil
@@ -174,17 +184,17 @@ func (s *WsUseCase) Heartbeat(conn *websocket.Conn, userID uint64) {
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 	for range ticker.C {
-		// s.logger.Info("发送心跳检测", zap.String("ping", "ping"))
+		// s.logger.Info("发送心跳检测", zap.Uint64("userID", userID))
 		err := conn.WriteMessage(websocket.PingMessage, nil)
 		if err != nil {
-			s.logger.Error("心跳检测失败", zap.Error(err))
+			s.logger.Error("心跳检测失败", zap.Error(err), zap.Uint64("userID", userID))
 			s.RemoveConnection(userID)
 			return
 		}
 	}
 }
 
-// 判断用户是否在线	
+// 判断用户是否在线
 func (s *WsUseCase) IsUserOnline(userID uint64) bool {
 	redisKey := fmt.Sprintf("%s:%s", global.ChatRedisOnline, cast.ToString(userID))
 	isMember, err := s.rds.SIsMember(context.Background(), redisKey, cast.ToString(userID)).Result()
@@ -324,4 +334,64 @@ func (s *WsUseCase) OnUserConnect(userID uint64, conn *websocket.Conn) {
 		// 更新消息状态为已发送
 		s.repo.UpdateMessageStatus(context.Background(), cast.ToString(msg.ID), "sent")
 	}
+}
+
+// 更新会话列表并缓存到 Redis
+func (s *WsUseCase) UpdateConversationList(msg dto.Message) {
+
+	session := model.Session{
+		UserID:    cast.ToUint(msg.SenderID),
+		FriendID:  cast.ToUint(msg.ReceiverID),
+		UnreadNum: 1,
+		LastMsg:   msg.Content,
+		LastMsgAt: time.Now(),
+	}
+
+	// 查询好友
+	var friend usermodel.User
+	global.DB.Where("id = ?", session.FriendID).First(&friend)
+
+	// 使用会话的 UserID 和 FriendID 作为 Redis 键的一部分
+	redisKey := fmt.Sprintf("session:%d:%d", session.UserID, session.FriendID)
+
+	// 将 Session 数据存储为 Redis 哈希表
+	err := s.rds.HMSet(context.Background(), redisKey, map[string]interface{}{
+		"UserID":       session.UserID,
+		"FriendID":     session.FriendID,
+		"FriendName":   friend.Nickname,
+		"FriendAvatar": friend.AvatarUrl,
+		"UnreadNum":    session.UnreadNum,
+		"LastMsg":      session.LastMsg,
+		"LastMsgAt":    session.LastMsgAt.Format(time.RFC3339),
+	}).Err()
+
+	if err != nil {
+		s.logger.Error("更新Redis缓存失败", zap.Error(err))
+	}
+
+	// 将好友ID添加到用户的好友集合中
+	friendSetKey := fmt.Sprintf("user:%d:friends", session.UserID)
+	err = s.rds.SAdd(context.Background(), friendSetKey, session.FriendID).Err()
+	if err != nil {
+		s.logger.Error("更新好友集合失败", zap.Error(err))
+	}
+
+	go s.syncConversationsToDB(msg)
+}
+
+// 将会话列表同步到数据库
+func (s *WsUseCase) syncConversationsToDB(msg dto.Message) {
+	session := model.Session{
+		UserID:    cast.ToUint(msg.SenderID),
+		FriendID:  cast.ToUint(msg.ReceiverID),
+		UnreadNum: 1,
+		LastMsg:   msg.Content,
+		LastMsgAt: time.Now(),
+	}
+	err := global.DB.Create(&session).Error
+	if err != nil {
+		s.logger.Error("同步会话数据到数据库失败", zap.Error(err))
+	}
+
+	s.logger.Info("同步会话数据到数据库", zap.Any("message", msg))
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 	"yug_server/global"
+	"yug_server/internal/data/user/model"
 	"yug_server/internal/dto"
 	"yug_server/internal/libs"
 	"yug_server/internal/services"
@@ -184,4 +185,13 @@ func (h *UserHandler) GetFriends(ctx *gin.Context) {
 	}
 
 	libs.SuccessResponse(ctx, "获取成功", friends)
+}
+
+// 获取用户信息
+func (h *UserHandler) GetUserInfo(ctx *gin.Context) {
+	userID := ctx.Query("user_id")
+
+	var user model.User
+	global.DB.Model(&user).Where("id = ?", userID).First(&user)
+	libs.SuccessResponse(ctx, "获取成功", user)
 }

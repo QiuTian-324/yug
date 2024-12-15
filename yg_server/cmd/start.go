@@ -34,6 +34,7 @@ func StartServer() {
 	modules := []Module{
 		&ChatModule{},
 		&UserModule{},
+		&FileModule{},
 	}
 
 	// 初始化模块

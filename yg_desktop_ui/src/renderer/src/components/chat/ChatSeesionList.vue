@@ -1,17 +1,17 @@
 <template>
   <!-- 会话列表 -->
-  <div class="h-screen bg-white">
-    <ul class="w-full text-black">
+  <div class="h-screen bg-light-base">
+    <ul class="w-full text-light-text">
       <li
-        v-for="conversation in conversations"
-        :key="conversation.sessionId"
+        v-for="conversation in chatStore.sessionList"
+        :key="conversation.friend_id"
         :class="[
           'flex items-center gap-3 p-2 mx-2 my-2 rounded-lg cursor-pointer',
-          selectedSessionId === conversation.sessionId
-            ? 'text-white bg-blue-500'
-            : 'hover:text-black hover:bg-gray-100'
+          chatStore.selectedSessionId === conversation.friend_id
+            ? 'text-white bg-light-active'
+            : 'hover:text-light-text hover:bg-light-hover'
         ]"
-        @click="selectConversation(conversation.sessionId)"
+        @click="selectConversation(conversation.friend_id)"
       >
         <!-- 头像 -->
         <div class="w-[40px] h-[40px]">
@@ -23,15 +23,15 @@
           <div>
             <div class="font-bold text-[14px]">{{ conversation.nickname }}</div>
             <div class="text-[12px] w-[120px] truncate">
-              {{ conversation.messagePreview }}
+              {{ conversation.last_msg }}
             </div>
             <div
               :class="[
                 'text-[11px]',
-                selectedSessionId === conversation.sessionId ? 'text-white' : 'text-gray-500'
+                chatStore.selectedSessionId === conversation.friend_id ? 'text-white' : 'text-gray-500'
               ]"
             >
-              {{ conversation.timestamp }}
+              {{ formatTimestamp(conversation.last_msg_at) }}
             </div>
           </div>
         </div>
@@ -41,62 +41,22 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar as AAvatar } from 'ant-design-vue'
-import { ref } from 'vue'
+import { useChatStore } from '@renderer/stores/chat';
 
-// 会话数据接口
-interface Conversation {
-  sessionId: number
-  avatar: string
-  nickname: string
-  messagePreview: string
-  timestamp: string
-}
 
-// 模拟会话数据
-const conversations: Conversation[] = [
-  {
-    sessionId: 1,
-    avatar: 'https://i.pravatar.cc/100?img=1',
-    nickname: 'Alice',
-    messagePreview: 'Hey! Are we still meeting later?',
-    timestamp: '11:45 AM'
-  },
-  {
-    sessionId: 2,
-    avatar: 'https://i.pravatar.cc/100?img=2',
-    nickname: 'Bob',
-    messagePreview: 'I’ve sent the files to your email.',
-    timestamp: '10:30 AM'
-  },
-  {
-    sessionId: 3,
-    avatar: 'https://i.pravatar.cc/100?img=3',
-    nickname: 'Charlie',
-    messagePreview: 'Can you review this document?',
-    timestamp: 'Yesterday'
-  },
-  {
-    sessionId: 4,
-    avatar: 'https://i.pravatar.cc/100?img=4',
-    nickname: 'David',
-    messagePreview: 'Great job on the presentation!',
-    timestamp: 'Yesterday'
-  },
-  {
-    sessionId: 5,
-    avatar: 'https://i.pravatar.cc/100?img=5',
-    nickname: 'Eva',
-    messagePreview: 'Let’s catch up this weekend.',
-    timestamp: '2 days ago'
-  }
-]
+// 使用 chatStore 中的 sessionList
+const chatStore = useChatStore()
 
-// 选中的会话ID
-const selectedSessionId = ref<number | null>(null)
 
 // 选择会话
-const selectConversation = (sessionId: number) => {
-  selectedSessionId.value = sessionId
+const selectConversation = (friendId: number) => {
+  chatStore.setSelectedSessionId(friendId)
+  chatStore.getChatRecord()
+}
+
+// 格式化时间戳
+const formatTimestamp = (timestamp: string) => {
+  const date = new Date(timestamp)
+  return date.toLocaleString()
 }
 </script>

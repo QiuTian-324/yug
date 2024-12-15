@@ -27,3 +27,11 @@ func (m *ChatModule) Initialize(db *gorm.DB, rds *redis.Client, logger *zap.Logg
 	pkg.RegisterHandler("chatHandler", chatHandler)
 	return nil
 }
+
+type FileModule struct{}
+
+func (m *FileModule) Initialize(db *gorm.DB, rds *redis.Client, logger *zap.Logger) error {
+	fileHandler := InitializeFileHandler(db, rds, logger)
+	pkg.RegisterHandler("fileHandler", fileHandler)
+	return nil
+}

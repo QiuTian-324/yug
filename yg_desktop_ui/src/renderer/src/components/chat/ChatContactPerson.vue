@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full text-white w-full p-2">
+  <div class="h-full w-full p-2 bg-light-base text-light-text">
     <a-tree
       v-model:selectedKeys="selectedKeys"
       blockNode
@@ -7,6 +7,7 @@
       show-icon
       default-expand-all
       @select="onSelect"
+      class="h-full w-full text-light-text bg-light-base"
     >
       <template #switcherIcon="{ switcherCls }">
         <down-outlined :class="switcherCls" />
@@ -32,9 +33,8 @@
 </template>
 
 <script lang="ts" setup>
-import { DownOutlined, UserOutlined } from '@ant-design/icons-vue'
+import { UserStore } from '@renderer/stores/user'
 import { computed, ref } from 'vue'
-import { UserStore } from '../../stores/user'
 
 const store = UserStore()
 
@@ -50,10 +50,12 @@ const treeData = computed(() => [
   {
     title: '好友',
     key: 'friend',
-    children: store.friendList ? store.friendList.map((friend) => ({
-      title: friend.username,
-      key: `friend-${friend.user_id}`
-    })) : []
+    children: store.friendList
+      ? store.friendList.map((friend) => ({
+          title: friend.username,
+          key: `friend-${friend.user_id}`
+        }))
+      : []
   }
 ])
 

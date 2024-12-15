@@ -22,7 +22,7 @@ type RateLimitInfo struct {
 }
 
 const (
-	RateLimit          = 2
+	RateLimit          = 100
 	RateLimitTime      = time.Minute
 	BlacklistThreshold = 5
 )

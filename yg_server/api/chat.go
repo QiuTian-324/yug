@@ -16,4 +16,11 @@ func RegisterChatRoutes(router *gin.RouterGroup) {
 	chatGroup.GET("/ws", chatHandler.Ws)
 	// 获取离线消息
 	// chatGroup.GET("/offline-messages", chatHandler.GetOfflineMessages)
+
+	// 获取会话列表
+	chatGroup.GET("/session_list", chatHandler.GetSessionList)
+	// 获取单聊聊天记录
+	chatGroup.GET("/chat_record", chatHandler.GetChatRecord)
+	// 获取群聊聊天记录
+	// chatGroup.GET("/group_chat_record", chatHandler.GetGroupChatRecord)
 }

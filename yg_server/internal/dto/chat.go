@@ -6,12 +6,12 @@ import "time"
 type MessageType string
 
 const (
-	TextMessageType   MessageType = "text"
-	ImageMessageType  MessageType = "image"
-	FileMessageType   MessageType = "file"
-	VideoMessageType  MessageType = "video"
-	SystemMessageType MessageType = "system"
-	NoticeMessageType MessageType = "notice"
+	TextMessageType   MessageType = "text" // 文本消息 0
+	ImageMessageType  MessageType = "image" // 图片消息 1
+	FileMessageType   MessageType = "file" // 文件消息 2
+	VideoMessageType  MessageType = "video" // 视频消息 3
+	SystemMessageType MessageType = "system" // 系统消息 4
+	NoticeMessageType MessageType = "notice" // 通知消息 5
 )
 
 // Message 定义通用的消息结构体

@@ -20,4 +20,6 @@ func CollectRoutes(router *gin.Engine) {
 	RegisterUserRoutes(api)
 	// 注册聊天路由
 	RegisterChatRoutes(api)
+	// 注册文件路由
+	RegisterFsoRoutes(api)
 }

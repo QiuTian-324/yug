@@ -44,3 +44,24 @@ jwt:
   access_token_expires_in: 12    # Access Token 过期时间（小时）
   refresh_token_expires_in: 168  # Refresh Token 过期时间（小时，7天）
 
+file_storage:
+  enabled: true # 是否启用文件存储
+  type: local # 文件存储类型
+  max_file_size: 10MB # 文件大小限制
+  allowed_file_types: # 允许的文件类型
+    - jpg
+    - png 
+    - pdf
+  encryption: false # 是否启用文件加密
+  local:
+    path: ./uploads # 文件存储路径
+    backup_path: ./backups # 文件备份路径
+    permissions: 755 # 文件权限
+  minio:
+    endpoint: 114.55.131.151:9090 # 端点
+    access_key: yugadmin # 访问密钥
+    secret_key: 11111111 # 秘密密钥
+    bucket: yugfos # 存储桶名称
+    region: us-east-1 # 区域
+    use_ssl: false # 是否使用 SSL
+    bucket_policy: private # 文件存储策略

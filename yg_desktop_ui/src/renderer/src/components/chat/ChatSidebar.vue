@@ -13,9 +13,9 @@
           v-for="(item, index) in menuItems"
           :key="index"
           @click="handleClick(item.action)"
-          class="p-3 w-[40px] h-[40px] flex items-center justify-center bg-white text-center rounded-lg cursor-pointer hover:bg-gray-200 transform hover:-translate-y-1 transition duration-200"
+          class="p-3 w-[40px] h-[40px] flex items-center justify-center bg-light-base text-light-text text-center rounded-lg cursor-pointer hover:bg-light-hover transform hover:-translate-y-1 transition duration-200"
         >
-          <a-tooltip :title="$t(`common.${item.tooltip}`)">
+          <a-tooltip placement="right" :title="$t(`common.${item.tooltip}`)">
             <component :is="item.icon" />
           </a-tooltip>
         </li>
@@ -33,7 +33,7 @@ import {
   SettingOutlined,
   UserOutlined
 } from '@ant-design/icons-vue'
-import { UserStore } from '../../stores/user'
+import { UserStore } from '@renderer/stores/user'
 
 const store = UserStore()
 

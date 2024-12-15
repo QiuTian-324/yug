@@ -1,0 +1,40 @@
+development:
+  develop: true        # 是否开启开发模式（调试模式）
+
+service:
+  port: 8080           # 服务端口
+
+log:
+  max_size: 100        # 日志文件最大 MB 数
+  max_backups: 5       # 日志文件最多保留几个备份
+  max_age: 14          # 日志文件最多保存多少天
+  compress: false      # 是否启用压缩
+
+mysql:
+  host: localhost
+  port: 3306
+  user: admin
+  password: secret123
+  database: example_db
+  MaxIdleCons: 5       # 设置最大空闲连接
+  MaxOpenCons: 50      # 设置最大打开连接
+
+redis:
+  host: 127.0.0.1
+  port: 6379
+  db: 1
+  expires: 48          # 缓存过期时间（小时）
+
+login:
+  timeout: 300         # 登录超时时间（秒）
+
+ticker:
+  Second: 10           # 默认刷新时间（秒）
+
+jwt:
+  secret: "supersecretkey"   # 用于签名的密钥
+  issuer: "ExampleIssuer"    # 签发者
+  expires_in: 14             # Token 过期时间（天）
+  leeway: 10s                # 时间误差（允许误差10秒）
+  access_token_expires_in: 24  # Access Token 过期时间（小时）
+  refresh_token_expires_in: 336 # Refresh Token 过期时间（小时，14天）

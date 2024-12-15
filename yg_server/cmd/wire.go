@@ -1,4 +1,5 @@
 // go:build wireinject
+// go:build wireinject
 //go:build wireinject
 // +build wireinject
 
@@ -22,4 +23,9 @@ func InitializeChatHandler(db *gorm.DB, rds *redis.Client, logger *zap.Logger) *
 func InitializeUserHandler(db *gorm.DB, rds *redis.Client, logger *zap.Logger) *handlers.UserHandler {
 	wire.Build(server.UserHandlerSet)
 	return &handlers.UserHandler{}
+}
+
+func InitializeFileHandler(db *gorm.DB, rds *redis.Client, logger *zap.Logger) *handlers.FileHandler {
+	wire.Build(server.FileHandlerSet)
+	return &handlers.FileHandler{}
 }

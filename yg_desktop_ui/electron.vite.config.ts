@@ -15,7 +15,17 @@ export default defineConfig({
     css: {
       postcss: {
         plugins: [tailwindcss],
-      }
+      },
+      preprocessorOptions: {
+        less: {
+          modifyVars: {
+            'primary-color': '#1DA57A',
+            'link-color': '#1DA57A',
+            'border-radius-base': '2px',
+          },
+          javascriptEnabled: true,
+        },
+      },
     },
     resolve: {
       alias: {
@@ -24,7 +34,6 @@ export default defineConfig({
     },
     plugins: [
       vue(),
-
     ]
   }
 })

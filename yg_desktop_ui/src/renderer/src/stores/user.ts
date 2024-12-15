@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { ApiResponse, Get, Post } from '../api';
 import i18n from "../i18n/index";
-import { AddFriendRequest, FriendListResponse, LoginRequest, LoginResponse } from '../interface/user';
+import { AddFriendRequest, FriendListResponse, LoginRequest, LoginResponse, UserInfoResponse } from '../interface/user';
 import { newErrorMessage, newSuccessMessage } from '../pkg/messages';
 import router from '../router';
 import { useChatStore } from './chat';
@@ -11,7 +11,7 @@ export const UserStore = defineStore('user', () => {
   const { t } = i18n.global
   const chatStore = useChatStore()
   // 用户信息
-  const userInfo = ref({})
+  const userInfo = ref<UserInfoResponse | null>(null)
   // token
   const token = ref(localStorage.getItem('token'))
   // 添加好友对话框是否显示
@@ -25,6 +25,9 @@ export const UserStore = defineStore('user', () => {
     username: 'akita1',
     password: '123'
   })
+
+  // 是否开启黑暗模式
+  const isDarkMode = ref(false)
 
   // 选中目标ID
   const selectedSeesionId = ref(0)
@@ -45,6 +48,12 @@ export const UserStore = defineStore('user', () => {
     }
     getFriendList()
     chatStore.connectWebSocket(token.value)
+  }
+
+  // 切换黑暗模式
+  const toggleDarkMode = () => {
+    isDarkMode.value = !isDarkMode.value
+    document.documentElement.classList.toggle('dark', isDarkMode.value)
   }
 
   // github登录
@@ -80,10 +89,17 @@ export const UserStore = defineStore('user', () => {
       localStorage.setItem('token', res.extra.token)
       router.push('/')
       newSuccessMessage(t('success.login'))
+      getUserInfo(res.data.user_id)
     } catch (error: any) {
       newErrorMessage(t('fail.login'))
       return error
     }
+  }
+
+  // 获取用户信息
+  const getUserInfo = async (user_id: string) => {
+    const res: ApiResponse<UserInfoResponse> = await Get<UserInfoResponse>('/user/info', { user_id })
+    userInfo.value = res.data
   }
 
   // 添加好友
@@ -130,13 +146,16 @@ export const UserStore = defineStore('user', () => {
     selectedSidebar,
     friendList,
     selectedSeesionId,
+    isDarkMode,
     Logout,
     LoginIn,
     addFriend,
     getFriendList,
     Init,
     GithubLogin,
-    LoginByGithubCode
+    LoginByGithubCode,
+    toggleDarkMode,
+    getUserInfo
   }
 }
   , {
@@ -152,6 +171,11 @@ export const UserStore = defineStore('user', () => {
           key: 'friendList',
           storage: localStorage,
           paths: ['friendList'],
+        },
+        {
+          key: 'userInfo',
+          storage: localStorage,
+          paths: ['userInfo'],
         }
       ]
     }

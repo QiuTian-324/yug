@@ -24,4 +24,5 @@ func RegisterUserRoutes(router *gin.RouterGroup) {
 	userGroup.GET("/friends", userHandler.GetFriends)
 	userGroup.GET("/query", userHandler.QueryUser)
 	userGroup.POST("/logout", userHandler.Logout)
+	userGroup.GET("/info", userHandler.GetUserInfo)
 }

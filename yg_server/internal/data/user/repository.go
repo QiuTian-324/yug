@@ -7,19 +7,17 @@ import (
 	"yug_server/internal/dto"
 	"yug_server/internal/repo"
 
-	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 type userRepo struct {
 	db     *gorm.DB
-	rds    *redis.Client
 	logger *zap.Logger
 }
 
-func NewUserRepo(db *gorm.DB, rds *redis.Client, logger *zap.Logger) repo.UserRepo {
-	return &userRepo{db: db, rds: rds, logger: logger}
+func NewUserRepo(db *gorm.DB, logger *zap.Logger) repo.UserRepo {
+	return &userRepo{db: db, logger: logger}
 }
 
 func (u *userRepo) AddFriend(ctx context.Context, userID uint64, friendID uint64) error {

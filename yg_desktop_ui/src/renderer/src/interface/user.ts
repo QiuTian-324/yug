@@ -4,28 +4,24 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  data: {
-    user_id: string;
-  },
+  user_id: string;
   extra: {
     token: string;
   }
 }
 
 export interface UserInfoResponse {
+  user_id: string;
   username: string;
+  nickname: string;
   avatar: string;
   email: string;
   phone: string;
-  sex: string;
-  birthday: string;
-  signature: string;
-  address: string;
-  friends: number;
-  groups: number;
-  messages: number;
-  groups_list: Array<any>;
-  friends_list: Array<any>;
+  avatar_url: string;
+  bio: string;
+  online: number;
+  status: number;
+  last_login_at: string;
 }
 
 export interface AddFriendRequest {
@@ -41,4 +37,22 @@ export interface FriendListResponse {
   avatar_url: string;
   bio: string;
   online: number;
+}
+
+export interface UserInfoRequest {
+  user_id: string;
+}
+
+export interface UserInfoResponse {
+  user_id: string;
+  username: string;
+  nickname: string;
+  avatar: string;
+  email: string;
+  phone: string;
+  avatar_url: string;
+  bio: string;
+  online: number;
+  status: number;
+  last_login_at: string;
 }

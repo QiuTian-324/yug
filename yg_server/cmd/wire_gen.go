@@ -11,6 +11,7 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"yug_server/internal/data/chat"
+	"yug_server/internal/data/fso"
 	"yug_server/internal/data/user"
 	"yug_server/internal/handlers"
 	"yug_server/internal/services"
@@ -19,15 +20,22 @@ import (
 // Injectors from wire.go:
 
 func InitializeChatHandler(db *gorm.DB, rds *redis.Client, logger *zap.Logger) *handlers.ChatHandler {
-	chatRepo := chat.NewChatRepo(db, rds, logger)
+	chatRepo := chat.NewChatRepo(db, logger)
 	wsUseCase := services.NewWsUseCase(chatRepo, rds, logger)
 	chatHandler := handlers.NewChatHandler(wsUseCase, rds, logger)
 	return chatHandler
 }
 
 func InitializeUserHandler(db *gorm.DB, rds *redis.Client, logger *zap.Logger) *handlers.UserHandler {
-	userRepo := user.NewUserRepo(db, rds, logger)
+	userRepo := user.NewUserRepo(db, logger)
 	userUseCase := services.NewUserUseCase(userRepo, rds, logger)
 	userHandler := handlers.NewUserHandler(userUseCase, rds, logger)
 	return userHandler
+}
+
+func InitializeFileHandler(db *gorm.DB, rds *redis.Client, logger *zap.Logger) *handlers.FileHandler {
+	fileRepo := file.NewFileRepo(db, logger)
+	fileUseCase := services.NewFileUseCase(fileRepo, rds, logger)
+	fileHandler := handlers.NewFileHandler(fileUseCase, rds, logger)
+	return fileHandler
 }

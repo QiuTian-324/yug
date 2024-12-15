@@ -1,0 +1,10 @@
+{
+	"devDependencies": {
+		"less": "^4.2.1",
+		"less-loader": "^12.2.0",
+		"vite-plugin-theme": "^0.8.6"
+	},
+	"dependencies": {
+		"antd-theme-generator": "^1.2.11"
+	}
+}
