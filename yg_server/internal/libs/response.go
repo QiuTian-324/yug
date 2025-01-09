@@ -37,62 +37,62 @@ func sendResponse(ctx *gin.Context, httpCode int, response Response) {
 	ctx.AbortWithStatusJSON(httpCode, response)
 }
 
-// SuccessResponse 返回成功的响应
-func SuccessResponse(ctx *gin.Context, message string, data interface{}) {
+// OK 返回成功的响应
+func OK(ctx *gin.Context, message string, data interface{}) {
 	response := NewResponse(CodeSuccess, message, true, data, nil)
 	sendResponse(ctx, http.StatusOK, response)
 }
 
-// CreatedResponse 返回资源创建成功的响应
-func CreatedResponse(ctx *gin.Context, message string, data interface{}) {
+// Created 返回资源创建成功的响应
+func Created(ctx *gin.Context, message string, data interface{}) {
 	response := NewResponse(CodeSuccess, message, true, data, nil)
 	sendResponse(ctx, http.StatusCreated, response)
 }
 
-// FailResponse 返回失败的响应
-func FailResponse(ctx *gin.Context, message string, data interface{}) {
+// Failed 返回失败的响应
+func Failed(ctx *gin.Context, message string, data interface{}) {
 	response := NewResponse(CodeFail, message, false, data, nil)
 	sendResponse(ctx, http.StatusBadRequest, response)
 }
 
-// NotFoundResponse 返回未找到的响应
-func NotFoundResponse(ctx *gin.Context, message string) {
+// NotFound 返回未找到的响应
+func NotFound(ctx *gin.Context, message string) {
 	response := NewResponse(CodeFail, message, false, nil, nil)
 	sendResponse(ctx, http.StatusNotFound, response)
 }
 
-// UnauthorizedResponse 返回未授权的响应
-func UnauthorizedResponse(ctx *gin.Context, message string) {
+// Unauthorized 返回未授权的响应
+func Unauthorized(ctx *gin.Context, message string) {
 	response := NewResponse(CodeFail, message, false, nil, nil)
 	sendResponse(ctx, http.StatusUnauthorized, response)
 }
 
-// ForbiddenResponse 返回禁止访问的响应
-func ForbiddenResponse(ctx *gin.Context, message string) {
+// Forbidden 返回禁止访问的响应
+func Forbidden(ctx *gin.Context, message string) {
 	response := NewResponse(CodeFail, message, false, nil, nil)
 	sendResponse(ctx, http.StatusForbidden, response)
 }
 
-// TooManyRequestsResponse 返回请求过于频繁的响应
-func TooManyRequestsResponse(ctx *gin.Context, message string) {
+// TooMany 返回请求过于频繁的响应
+func TooMany(ctx *gin.Context, message string) {
 	response := NewResponse(CodeFail, message, false, nil, nil)
 	sendResponse(ctx, http.StatusTooManyRequests, response)
 }
 
-// BadRequestResponse 返回请求无效的响应
-func BadRequestResponse(ctx *gin.Context, message string) {
+// ParamError 返回参数错误的响应
+func ParamError(ctx *gin.Context, message string) {
 	response := NewResponse(CodeFail, message, false, nil, nil)
 	sendResponse(ctx, http.StatusBadRequest, response)
 }
 
-// InternalServerErrorResponse 返回服务器错误的响应
-func InternalServerErrorResponse(ctx *gin.Context, message string) {
+// Internal 返回服务器错误的响应
+func Internal(ctx *gin.Context, message string) {
 	response := NewResponse(CodeFail, message, false, nil, nil)
 	sendResponse(ctx, http.StatusInternalServerError, response)
 }
 
-// ServiceUnavailableResponse 返回服务不可用的响应
-func ServiceUnavailableResponse(ctx *gin.Context, message string) {
+// ServiceUnavailable 返回服务不可用的响应
+func ServiceUnavailable(ctx *gin.Context, message string) {
 	response := NewResponse(CodeFail, message, false, nil, nil)
 	sendResponse(ctx, http.StatusServiceUnavailable, response)
 }

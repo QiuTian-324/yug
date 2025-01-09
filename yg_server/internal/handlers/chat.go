@@ -67,9 +67,10 @@ func (h *ChatHandler) GetSessionList(ctx *gin.Context) {
 
 	// 获取用户的所有好友ID
 	friendIDs, err := h.rds.SMembers(context.Background(), friendSetKey).Result()
+
 	if err != nil {
 		h.logger.Error("获取好友集合失败", zap.Error(err))
-		libs.FailResponse(ctx, "获取好友集合失败", nil)
+		libs.Failed(ctx, "获取好友集合失败", nil)
 		return
 	}
 
@@ -83,7 +84,7 @@ func (h *ChatHandler) GetSessionList(ctx *gin.Context) {
 		LastMsgAt string `json:"last_msg_at"`
 	}
 
-	var sessions []list
+	var sessions = make([]list, 0)
 	for _, friendIDStr := range friendIDs {
 		friendID := cast.ToUint(friendIDStr)
 		redisKey := fmt.Sprintf("session:%d:%d", userID, friendID)
@@ -112,7 +113,7 @@ func (h *ChatHandler) GetSessionList(ctx *gin.Context) {
 		sessions = append(sessions, session)
 	}
 
-	libs.SuccessResponse(ctx, "获取会话列表成功", map[string]interface{}{
+	libs.OK(ctx, "获取会话列表成功", map[string]interface{}{
 		"list": sessions,
 	})
 }
@@ -126,7 +127,7 @@ func (h *ChatHandler) GetChatRecord(ctx *gin.Context) {
 	chatMsgs := []model.ChatMsg{}
 	global.DB.Where("(sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)", userID, friendID, friendID, userID).Find(&chatMsgs)
 
-	libs.SuccessResponse(ctx, "获取聊天记录成功", map[string]interface{}{
+	libs.OK(ctx, "获取聊天记录成功", map[string]interface{}{
 		"list": chatMsgs,
 	})
 }

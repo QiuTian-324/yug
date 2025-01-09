@@ -27,16 +27,16 @@ func (h *FileHandler) Upload(ctx *gin.Context) {
 	files, err := ctx.MultipartForm()
 	if err != nil {
 		h.logger.Error("获取文件失败", zap.Error(err))
-		libs.FailResponse(ctx, err.Error(), nil)
+		libs.Failed(ctx, err.Error(), nil)
 		return
 	}
 
 	err = h.fc.UploadFile(ctx, services.UploaderType(h.fsoCfg.Type), h.fsoCfg.Local, h.fsoCfg.Minio, files)
 	if err != nil {
 		h.logger.Error("上传失败", zap.Error(err))
-		libs.FailResponse(ctx, err.Error(), nil)
+		libs.Failed(ctx, err.Error(), nil)
 		return
 	}
 
-	libs.SuccessResponse(ctx, "上传成功", nil)
+	libs.OK(ctx, "上传成功", nil)
 }

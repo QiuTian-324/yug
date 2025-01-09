@@ -14,6 +14,7 @@ type LoginRequest struct {
 
 type LoginResponse struct {
 	UserID string `json:"user_id"`
+	Token  string `json:"token"`
 }
 
 // 添加好友请求

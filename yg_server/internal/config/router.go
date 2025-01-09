@@ -28,7 +28,7 @@ func Routerinternal() {
 	router.CollectRoutes(RouterGin)
 
 	RouterGin.NoRoute(func(c *gin.Context) {
-		libs.NotFoundResponse(c, "抱歉，您请求的接口不存在")
+		libs.NotFound(c, "抱歉，您请求的接口不存在")
 	})
 
 }

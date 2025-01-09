@@ -1,8 +1,23 @@
-import { contextBridge } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import { contextBridge, ipcRenderer } from 'electron'
 
 // Custom APIs for renderer
-const api = {}
+const api = {
+  send: (channel, data) => {
+    // 允许的通道列表
+    const validChannels = ['isLogin'];
+    if (validChannels.includes(channel)) {
+      ipcRenderer.send(channel, data);
+    }
+  },
+  on: (channel, func) => {
+    const validChannels = ['pong'];
+    if (validChannels.includes(channel)) {
+      // 绑定事件监听器
+      ipcRenderer.on(channel, (event, ...args) => func(...args));
+    }
+  }
+}
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise
@@ -20,3 +35,4 @@ if (process.contextIsolated) {
   // @ts-ignore (define in dts)
   window.api = api
 }
+

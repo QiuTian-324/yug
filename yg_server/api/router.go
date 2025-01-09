@@ -13,7 +13,7 @@ func CollectRoutes(router *gin.Engine) {
 
 	// 示例：返回一个 ping 响应
 	api.GET("/ping", func(ctx *gin.Context) {
-		libs.SuccessResponse(ctx, "pong", nil)
+		libs.OK(ctx, "pong", nil)
 	})
 
 	// 注册用户路由

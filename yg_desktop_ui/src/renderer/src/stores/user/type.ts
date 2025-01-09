@@ -5,9 +5,7 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   user_id: string;
-  extra: {
-    token: string;
-  }
+  token: string;
 }
 
 export interface UserInfoResponse {

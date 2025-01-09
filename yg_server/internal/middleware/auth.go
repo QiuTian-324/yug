@@ -22,7 +22,7 @@ type RateLimitInfo struct {
 }
 
 const (
-	RateLimit          = 100
+	RateLimit          = 100000
 	RateLimitTime      = time.Minute
 	BlacklistThreshold = 5
 )
@@ -53,14 +53,14 @@ func AuthMiddleware() gin.HandlerFunc {
 		// 检查IP是否在黑名单中
 		if blacklistedIPs[ip] {
 			pkg.Error("IP在黑名单中", nil)
-			libs.ForbiddenResponse(c, fmt.Sprintf("访问被拒绝，IP %s 在黑名单中！", ip))
+			libs.Forbidden(c, fmt.Sprintf("访问被拒绝，IP %s 在黑名单中！", ip))
 			return
 		}
 
 		// 分布式速率限制检查
 		if isRateLimited(ip) {
 			pkg.Error("请求过于频繁", nil)
-			libs.TooManyRequestsResponse(c, fmt.Sprintf("请求过于频繁，请稍后再试，IP %s 已记录！", ip))
+			libs.TooMany(c, fmt.Sprintf("请求过于频繁，请稍后再试，IP %s 已记录！", ip))
 			return
 		}
 
@@ -75,7 +75,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		if token == "" {
 			ip := c.ClientIP()
 			pkg.Error("token 不存在", nil)
-			libs.UnauthorizedResponse(c, fmt.Sprintf("非法请求，请停止任何非法操作，IP %s 已记录！", ip))
+			libs.Unauthorized(c, fmt.Sprintf("非法请求，请停止任何非法操作，IP %s 已记录！", ip))
 			return
 		}
 
@@ -88,7 +88,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		currentUser, err := libs.ParseToken(token)
 		if err != nil {
 			pkg.Error("token 解密失败", err)
-			libs.UnauthorizedResponse(c, fmt.Sprintf("非法请求，解密 token 失败，IP %s 已记录！", ip))
+			libs.Unauthorized(c, fmt.Sprintf("非法请求，解密 token 失败，IP %s 已记录！", ip))
 			return
 		}
 
@@ -97,7 +97,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		_, err = libs.RedisGet(c, redisKey)
 		if err != nil {
 			pkg.Error("Redis 中不存在 token", err)
-			libs.UnauthorizedResponse(c, fmt.Sprintf("非法请求，用户未认证，IP %s 已记录！", ip))
+			libs.Unauthorized(c, fmt.Sprintf("非法请求，用户未认证，IP %s 已记录！", ip))
 			return
 		}
 

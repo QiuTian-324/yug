@@ -1,19 +1,30 @@
+import { connectWebSocket } from '@renderer/services/websocketService';
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { ApiResponse, Get, Post } from '../api';
-import i18n from "../i18n/index";
-import { AddFriendRequest, FriendListResponse, LoginRequest, LoginResponse, UserInfoResponse } from '../interface/user';
-import { newErrorMessage, newSuccessMessage } from '../pkg/messages';
-import router from '../router';
-import { useChatStore } from './chat';
+import { ApiResponse, Get, Post } from '../../api';
+import i18n from "../../i18n/index";
+import { newErrorMessage, newSuccessMessage } from '../../pkg/messages';
+import router from '../../router';
+import { AddFriendRequest, FriendListResponse, LoginRequest, LoginResponse, UserInfoResponse } from './type';
 
 export const UserStore = defineStore('user', () => {
   const { t } = i18n.global
-  const chatStore = useChatStore()
   // 用户信息
-  const userInfo = ref<UserInfoResponse | null>(null)
+  const userInfo = ref<UserInfoResponse>({
+    user_id: '',
+    username: '',
+    nickname: '',
+    avatar: '',
+    email: '',
+    phone: '',
+    avatar_url: '',
+    bio: '',
+    online: 0,
+    status: 0,
+    last_login_at: ''
+  })
   // token
-  const token = ref(localStorage.getItem('token'))
+  const token = ref(localStorage.getItem('token') || '')
   // 添加好友对话框是否显示
   const addFriendModalVisible = ref(false)
   // 添加好友数据
@@ -22,12 +33,10 @@ export const UserStore = defineStore('user', () => {
   })
   // 添加好友表单
   const loginFormState = ref<LoginRequest>({
-    username: 'akita1',
+    username: 'akita',
     password: '123'
   })
 
-  // 是否开启黑暗模式
-  const isDarkMode = ref(false)
 
   // 选中目标ID
   const selectedSeesionId = ref(0)
@@ -47,14 +56,9 @@ export const UserStore = defineStore('user', () => {
       return
     }
     getFriendList()
-    chatStore.connectWebSocket(token.value)
+    connectWebSocket(token.value)
   }
 
-  // 切换黑暗模式
-  const toggleDarkMode = () => {
-    isDarkMode.value = !isDarkMode.value
-    document.documentElement.classList.toggle('dark', isDarkMode.value)
-  }
 
   // github登录
   const GithubLogin = async () => {
@@ -82,11 +86,11 @@ export const UserStore = defineStore('user', () => {
 
 
   // 登录
-  const LoginIn = async () => {
+  const handleLoginIn = async () => {
     try {
       const res: ApiResponse<LoginResponse> = await Post<LoginResponse>('/user/login', loginFormState.value);
-      token.value = res.extra.token
-      localStorage.setItem('token', res.extra.token)
+      token.value = res.data.token
+      localStorage.setItem('token', res.data.token)
       router.push('/')
       newSuccessMessage(t('success.login'))
       getUserInfo(res.data.user_id)
@@ -115,11 +119,12 @@ export const UserStore = defineStore('user', () => {
   }
 
   // 退出登录
-  const Logout = async () => {
+  const handleLogout = async () => {
     try {
       await Post<ApiResponse<any>>('/user/logout')
       localStorage.removeItem('token')
       router.push('/login')
+      token.value = ''
       newSuccessMessage(t('success.logout'))
     } catch (error: any) {
       newErrorMessage(t('fail.logout'))
@@ -146,15 +151,13 @@ export const UserStore = defineStore('user', () => {
     selectedSidebar,
     friendList,
     selectedSeesionId,
-    isDarkMode,
-    Logout,
-    LoginIn,
+    handleLoginIn,
+    handleLogout,
     addFriend,
     getFriendList,
     Init,
     GithubLogin,
     LoginByGithubCode,
-    toggleDarkMode,
     getUserInfo
   }
 }

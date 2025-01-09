@@ -1,37 +1,43 @@
-import { electronApp, is, optimizer } from '@electron-toolkit/utils'
-import { app, BrowserWindow, ipcMain, shell } from 'electron'
-import { join } from 'path'
-import icon from '../../resources/icon.png?asset'
-
+import { electronApp, is, optimizer } from '@electron-toolkit/utils';
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { join } from 'path';
+import icon from '../../resources/icon.png?asset';
+// 声明 mainWindow 为 BrowserWindow | null 类型
+let mainWindow: BrowserWindow | null = null;
 function createWindow(): void {
-  // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  // 初始化 mainWindow
+  mainWindow = new BrowserWindow({
     width: 950,
     height: 670,
     show: false,
     autoHideMenuBar: true,
+    fullscreenable: true, // 禁用全屏按钮
+    maximizable: false,    // 启用最大化
+    resizable: true,      // 启用调整大小
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
     }
-  })
+  });
 
   mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
-  })
+    mainWindow?.show();
+  });
+
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
-    return { action: 'deny' }
-  })
+    shell.openExternal(details.url);
+    return { action: 'deny' };
+  });
 
-  // HMR for renderer base on electron-vite cli.
-  // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']);
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   }
 }
 
@@ -49,8 +55,23 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
+  ipcMain.on('isLogin', (event, token) => {
+    console.log('token:', token);
+    if (mainWindow) {
+      if (!token) {
+        mainWindow.setSize(320, 450);
+        mainWindow.setMaximizable(false); // 禁用最大化
+        mainWindow.setResizable(false);   // 禁用调整大小
+      } else {
+        mainWindow.setSize(950, 670);
+        mainWindow.setMaximizable(true);  // 启用最大化
+        mainWindow.setResizable(true);    // 启用调整大小
+      }
+    }
+
+    // 发送 'pong' 消息回到渲染进程
+    event.sender.send('pong', 'Hello from main process');
+  });
 
   createWindow()
 

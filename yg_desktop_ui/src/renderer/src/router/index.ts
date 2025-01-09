@@ -1,17 +1,54 @@
-import { UserStore } from '@renderer/stores/user'
+import { UserStore } from '@renderer/stores/user/user'
 import { createRouter, createWebHistory } from 'vue-router'
-import ChatRoom from '../views/ChatRoom.vue'
 import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
 
 const routes = [
   {
     path: '/',
-    name: 'ChatRoom',
-    component: ChatRoom,
-    meta: {
-      requiresAuth: true
-    }
+    name: 'layout',
+    component: () => import('@renderer/views/Layout.vue'),
+    redirect: '/chat',
+    children: [
+      {
+        path: '/chat',
+        name: 'chat',
+        component: () => import('@renderer/views/Chat/index.vue'),
+        meta: {
+          requiresAuth: true
+        },
+        children: [
+          {
+            path: '/chat/:id',
+            name: 'chatDetail',
+            component: () => import('@renderer/views/Chat/Chat.vue')
+          }
+        ]
+      },
+      {
+        path: '/ai',
+        name: 'ai',
+        component: () => import('@renderer/views/AI/index.vue'),
+        meta: {
+          requiresAuth: true
+        }
+      },
+      {
+        path: '/remember',
+        name: 'remember',
+        component: () => import('@renderer/views/Remember/index.vue')
+      },
+      {
+        path: '/planet',
+        name: 'planet',
+        component: () => import('@renderer/views/Planet/index.vue')
+      },
+      {
+        path: '/leyu_island',
+        name: 'leyu_island',
+        component: () => import('@renderer/views/Leyu_Island/index.vue')
+      }
+    ]
   },
   {
     path: '/login',
@@ -29,11 +66,6 @@ const routes = [
       requiresAuth: false
     }
   }
-  // {
-  //   path: '/callback',
-  //   name: 'callback',
-  //   component: Callback,
-  // },
 ]
 
 const router = createRouter({

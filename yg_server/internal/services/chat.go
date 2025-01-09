@@ -94,6 +94,9 @@ func (s *WsUseCase) SendMessage(conn *websocket.Conn, messageData []byte) error 
 		return err
 	}
 
+	// 更新会话列表并缓存到 Redis
+	s.UpdateConversationList(msg)
+
 	// 检查接收者是否在线
 	if !s.IsUserOnline(cast.ToUint64(msg.ReceiverID)) {
 		s.logger.Info("接收者不在线，存储离线消息")
@@ -130,9 +133,6 @@ func (s *WsUseCase) SendMessage(conn *websocket.Conn, messageData []byte) error 
 	} else {
 		s.logger.Error("接收者连接不存在")
 	}
-
-	// 更新会话列表并缓存到 Redis
-	s.UpdateConversationList(msg)
 
 	return nil
 }
@@ -376,22 +376,22 @@ func (s *WsUseCase) UpdateConversationList(msg dto.Message) {
 		s.logger.Error("更新好友集合失败", zap.Error(err))
 	}
 
-	go s.syncConversationsToDB(msg)
+	// go s.syncConversationsToDB(msg)
 }
 
-// 将会话列表同步到数据库
-func (s *WsUseCase) syncConversationsToDB(msg dto.Message) {
-	session := model.Session{
-		UserID:    cast.ToUint(msg.SenderID),
-		FriendID:  cast.ToUint(msg.ReceiverID),
-		UnreadNum: 1,
-		LastMsg:   msg.Content,
-		LastMsgAt: time.Now(),
-	}
-	err := global.DB.Create(&session).Error
-	if err != nil {
-		s.logger.Error("同步会话数据到数据库失败", zap.Error(err))
-	}
+// // 将会话列表同步到数据库
+// func (s *WsUseCase) syncConversationsToDB(msg dto.Message) {
+// 	session := model.Session{
+// 		UserID:    cast.ToUint(msg.SenderID),
+// 		FriendID:  cast.ToUint(msg.ReceiverID),
+// 		UnreadNum: 1,
+// 		LastMsg:   msg.Content,
+// 		LastMsgAt: time.Now(),
+// 	}
+// 	err := global.DB.Create(&session).Error
+// 	if err != nil {
+// 		s.logger.Error("同步会话数据到数据库失败", zap.Error(err))
+// 	}
 
-	s.logger.Info("同步会话数据到数据库", zap.Any("message", msg))
-}
+// 	s.logger.Info("同步会话数据到数据库", zap.Any("message", msg))
+// }

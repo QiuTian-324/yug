@@ -46,13 +46,12 @@ export default request
 
 // 定义 API 响应的接口
 export interface ApiResponse<T> {
-  code: number;
-  data: T;
-  extra: any;
-  message: string;
-  success: boolean;
+  code: number;       // 业务逻辑的成功或失败
+  message: string;    // 返回的消息
+  data: T;            // 返回的数据
+  error?: string;     // 错误信息（可选）
+  success: boolean;   // 请求是否成功处理
 }
-
 
 // GET 请求
 export function Get<T>(url: string, params: Record<string, any> = {}): Promise<ApiResponse<T>> {
@@ -61,6 +60,15 @@ export function Get<T>(url: string, params: Record<string, any> = {}): Promise<A
 
 // POST 请求
 export function Post<T>(url: string, data: Record<string, any> = {}): Promise<ApiResponse<T>> {
-  console.log(url);
   return request.post(url, data);
+}
+
+// PUT 请求
+export function Put<T>(url: string, data: Record<string, any> = {}): Promise<ApiResponse<T>> {
+  return request.put(url, data);
+}
+
+// DELETE 请求
+export function Delete<T>(url: string, data: Record<string, any> = {}): Promise<ApiResponse<T>> {
+  return request.delete(url, { data });
 }

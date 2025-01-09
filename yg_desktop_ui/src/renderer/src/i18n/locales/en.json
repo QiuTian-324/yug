@@ -13,6 +13,9 @@
     "messages": "Messages",
     "contacts": "Contacts",
     "ai_assistant": "A.I. Assistant",
+    "remember": "Random",
+    "planet": "Planet",
+    "leyu_Island": "Leyu Island",
     "profile": "Profile",
     "settings": "Settings",
     "thisFeature": "This feature is not available yet"
@@ -26,7 +29,8 @@
       "empty": "No messages yet.",
       "delete": "Delete message",
       "edit": "Edit message"
-    }
+    },
+    "sendMessage": "Press Enter to send message"
   },
   "user": {
     "profile": "Profile",
@@ -53,6 +57,7 @@
     "account": "Account",
     "password": "Password",
     "email": "Email",
+    "phone": "Phone",
     "captcha": "Captcha",
     "sendCaptcha": "Send",
     "sendingCaptcha": "Sending",
@@ -69,7 +74,8 @@
     "sendCaptcha": "Send",
     "sendingCaptcha": "Sending...",
     "hasAccount": "Already have an account?",
-    "login": "Login"
+    "login": "Login",
+    "captcha": "Captcha"
   },
   "settings": {
     "title": "Settings",

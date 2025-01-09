@@ -13,6 +13,9 @@
     "messages": "消息",
     "contacts": "联系人",
     "ai_assistant": "小语AI",
+    "remember": "随心记",
+    "planet": "动态",
+    "leyu_Island": "乐语岛",
     "profile": "个人资料",
     "settings": "设置",
     "thisFeature": "此功能暂未开放"
@@ -26,7 +29,8 @@
       "empty": "暂无消息。",
       "delete": "删除消息",
       "edit": "编辑消息"
-    }
+    },
+    "sendMessage": "按 Enter 键发送消息"
   },
   "user": {
     "profile": "个人资料",
@@ -53,6 +57,7 @@
     "account": "账号",
     "password": "密码",
     "email": "邮箱",
+    "phone": "手机号",
     "captcha": "验证码",
     "sendCaptcha": "发送",
     "sendingCaptcha": "发送中...",
@@ -69,7 +74,8 @@
     "hasAccount": "已有账号？",
     "sendCaptcha": "发送",
     "sendingCaptcha": "发送中...",
-    "login": "登录"
+    "login": "登录",
+    "captcha": "验证码"
   },
   "settings": {
     "title": "设置",

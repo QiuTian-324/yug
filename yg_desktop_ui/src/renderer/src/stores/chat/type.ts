@@ -3,8 +3,8 @@ export interface SessionListResponse {
 }
 
 export interface SessionData {
-  user_id: number
-  friend_id: number
+  user_id: string
+  friend_id: string
   nickname: string
   avatar: string
   unread_num: number
@@ -22,9 +22,9 @@ export interface ChatRecordData {
   updated_at: string;
   deleted_at: string | null;
   is_deleted: boolean;
-  sender_id: number;
-  receiver_id: number;
-  group_id: number;
+  sender_id: string;
+  receiver_id: string;
+  group_id: string;
   content: string;
   content_type: number;
   is_read: number;
